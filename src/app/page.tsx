@@ -121,13 +121,16 @@ export default function HomePage() {
 
   return (
     <main className={styles.shell}>
-      <ShuttleMap
-        routes={routes}
-        shuttles={live?.shuttles ?? []}
-        focus={focus}
-      />
+      <div className={styles.mapPane}>
+        <ShuttleMap
+          routes={routes}
+          shuttles={live?.shuttles ?? []}
+          focus={focus}
+        />
+      </div>
 
       <aside className={styles.board}>
+        <div className={styles.boardHandle} aria-hidden />
         <header className={styles.masthead}>
           <div className={styles.brandBlock}>
             <h1 className={styles.brand}>LARK</h1>
@@ -155,12 +158,14 @@ export default function HomePage() {
                       <LineBullet line="express" size="sm" />
                       <LineBullet line="regular" size="sm" />
                     </span>
-                    <span>All trains</span>
+                    <span className={styles.lineBtnText}>All</span>
                   </>
                 ) : (
                   <>
                     <LineBullet line={key} size="sm" />
-                    <span>{SHUTTLES[key].name}</span>
+                    <span className={styles.lineBtnText}>
+                      {SHUTTLES[key].name}
+                    </span>
                   </>
                 )}
               </button>
@@ -216,13 +221,13 @@ export default function HomePage() {
                 </div>
 
                 <div className={styles.metaGrid}>
-                  <div>
+                  <div className={styles.metaItem}>
                     <div className={styles.metaLabel}>Last reported</div>
                     <div className={styles.metaValue}>
                       {s?.address ?? "Waiting for signal"}
                     </div>
                   </div>
-                  <div>
+                  <div className={styles.metaItem}>
                     <div className={styles.metaLabel}>Updated</div>
                     <div className={styles.metaValue}>
                       {ageLabel(s?.locatedAt ?? null)}

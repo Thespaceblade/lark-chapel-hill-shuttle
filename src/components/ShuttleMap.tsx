@@ -42,11 +42,30 @@ function FitToRoutes({
     const pts: [number, number][] = [];
     if (focus === "both" || focus === "express") pts.push(...routes.express.line);
     if (focus === "both" || focus === "regular") pts.push(...routes.regular.line);
-    if (pts.length >= 2) {
-      map.fitBounds(pts, { padding: [48, 48], maxZoom: 15 });
-    }
+    if (pts.length < 2) return;
+
+    const mobile = window.matchMedia("(max-width: 720px)").matches;
+    map.fitBounds(pts, {
+      paddingTopLeft: mobile ? [24, 24] : [48, 48],
+      paddingBottomRight: mobile ? [24, 24] : [48, 48],
+      maxZoom: mobile ? 14 : 15,
+    });
     // Intentionally ignore shuttle positions — live updates should move markers only.
   }, [map, routes, focus]);
+
+  useEffect(() => {
+    const onResize = () => {
+      map.invalidateSize();
+    };
+    window.addEventListener("resize", onResize);
+    // Leaflet often needs a tick after layout flips desktop↔mobile
+    const t = window.setTimeout(onResize, 80);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.clearTimeout(t);
+    };
+  }, [map]);
+
   return null;
 }
 

@@ -37,6 +37,33 @@ function ageLabel(iso: string | null): string {
   return `${Math.floor(sec / 3600)}h ago`;
 }
 
+function statusWord(state: string | null | undefined): string {
+  const s = (state || "").toLowerCase();
+  if (s === "moving") return "en route";
+  if (s === "idling") return "holding";
+  if (s === "off") return "out of service";
+  return s || "unknown";
+}
+
+function LineBullet({
+  line,
+  size = "md",
+}: {
+  line: ShuttleKey;
+  size?: "sm" | "md" | "lg";
+}) {
+  const meta = SHUTTLES[line];
+  return (
+    <span
+      className={`${styles.bullet} ${styles[`bullet_${size}`]}`}
+      style={{ background: meta.color }}
+      aria-hidden
+    >
+      {meta.bullet}
+    </span>
+  );
+}
+
 export default function HomePage() {
   const [live, setLive] = useState<LiveResponse | null>(null);
   const [routes, setRoutes] = useState<RoutesResponse | null>(null);
@@ -100,72 +127,120 @@ export default function HomePage() {
         focus={focus}
       />
 
-      <aside className={styles.panel}>
-        <p className={styles.eyebrow}>Chapel Hill</p>
-        <h1 className={styles.brand}>Lark</h1>
-        <p className={styles.tag}>
-          Live Express & Regular shuttle positions. Next-stop ETA from the
-          intended loop.
-        </p>
+      <aside className={styles.board}>
+        <header className={styles.masthead}>
+          <div className={styles.brandBlock}>
+            <h1 className={styles.brand}>LARK</h1>
+            <p className={styles.brandSub}>Chapel Hill shuttle</p>
+          </div>
+          <div className={styles.serviceRow} aria-label="Service lines">
+            <LineBullet line="express" size="lg" />
+            <LineBullet line="regular" size="lg" />
+          </div>
+        </header>
 
-        <div className={styles.toggles}>
-          {(["both", "express", "regular"] as const).map((key) => (
-            <button
-              key={key}
-              type="button"
-              className={focus === key ? styles.toggleOn : styles.toggle}
-              onClick={() => setFocus(key)}
-            >
-              {key === "both" ? "Both" : SHUTTLES[key].name}
-            </button>
-          ))}
-        </div>
-
-        <div className={styles.cards}>
-          {(["express", "regular"] as ShuttleKey[]).map((key) => {
-            const s = byKey.get(key);
+        <nav className={styles.lineSelect} aria-label="Filter lines">
+          {(["both", "express", "regular"] as const).map((key) => {
+            const on = focus === key;
             return (
-              <article
+              <button
                 key={key}
-                className={styles.card}
-                style={{ ["--bus" as string]: SHUTTLES[key].color }}
+                type="button"
+                className={on ? styles.lineBtnOn : styles.lineBtn}
+                onClick={() => setFocus(key)}
               >
-                <header className={styles.cardHead}>
-                  <h2>{SHUTTLES[key].name}</h2>
-                  <span className={styles.state}>
-                    {s?.state ?? "…"}
-                    {s?.speed ? ` · ${s.speed}` : ""}
-                  </span>
-                </header>
-                <p className={styles.where}>{s?.address ?? "Waiting for fix…"}</p>
-                {s?.nextStop ? (
-                  <p className={styles.next}>
-                    Next <strong>{s.nextStop.name}</strong>
-                    {s.nextStop.etaMin != null
-                      ? ` · ~${s.nextStop.etaMin} min`
-                      : ""}
-                    <span className={styles.meta}>
-                      {" "}
-                      ({Math.round(s.nextStop.alongM)} m along loop)
+                {key === "both" ? (
+                  <>
+                    <span className={styles.dualBullets}>
+                      <LineBullet line="express" size="sm" />
+                      <LineBullet line="regular" size="sm" />
                     </span>
-                  </p>
+                    <span>All trains</span>
+                  </>
                 ) : (
-                  <p className={styles.next}>Next stop unavailable</p>
+                  <>
+                    <LineBullet line={key} size="sm" />
+                    <span>{SHUTTLES[key].name}</span>
+                  </>
                 )}
-                <p className={styles.meta}>
-                  Updated {ageLabel(s?.locatedAt ?? null)}
-                  {s?.offLoopM != null ? ` · ${s.offLoopM} m off loop` : ""}
-                </p>
-              </article>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className={styles.rolls}>
+          {(["express", "regular"] as ShuttleKey[]).map((key) => {
+            if (focus !== "both" && focus !== key) return null;
+            const s = byKey.get(key);
+            const eta =
+              s?.nextStop?.etaMin != null
+                ? Math.max(0, Math.round(s.nextStop.etaMin))
+                : null;
+            return (
+              <section key={key} className={styles.roll}>
+                <div className={styles.rollHead}>
+                  <LineBullet line={key} size="md" />
+                  <div className={styles.rollTitle}>
+                    <h2>{SHUTTLES[key].name.toUpperCase()}</h2>
+                    <p className={styles.toward}>
+                      {key === "express"
+                        ? "to Memorial Hall / Lark"
+                        : "to Union · Deck · Sitterson · Lark"}
+                    </p>
+                  </div>
+                  <div
+                    className={styles.liveTag}
+                    data-state={(s?.state || "").toLowerCase()}
+                  >
+                    {statusWord(s?.state)}
+                  </div>
+                </div>
+
+                <div className={styles.nextBlock}>
+                  <div className={styles.nextLabel}>Next stop</div>
+                  <div className={styles.nextRow}>
+                    <div className={styles.nextName}>
+                      {s?.nextStop?.name ?? "—"}
+                    </div>
+                    <div className={styles.eta}>
+                      {eta != null ? (
+                        <>
+                          <span className={styles.etaNum}>{eta}</span>
+                          <span className={styles.etaUnit}>min</span>
+                        </>
+                      ) : (
+                        <span className={styles.etaUnit}>—</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.metaGrid}>
+                  <div>
+                    <div className={styles.metaLabel}>Last reported</div>
+                    <div className={styles.metaValue}>
+                      {s?.address ?? "Waiting for signal"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className={styles.metaLabel}>Updated</div>
+                    <div className={styles.metaValue}>
+                      {ageLabel(s?.locatedAt ?? null)}
+                      {s?.speed ? ` · ${s.speed}` : ""}
+                    </div>
+                  </div>
+                </div>
+              </section>
             );
           })}
         </div>
 
         {error ? <p className={styles.error}>{error}</p> : null}
-        <p className={styles.footer}>
-          Refreshes every 1s · Motive live share
-          {live?.fetchedAt ? ` · fetched ${ageLabel(live.fetchedAt)}` : ""}
-        </p>
+
+        <footer className={styles.footer}>
+          Live every 1s · Motive share
+          {live?.fetchedAt ? ` · ${ageLabel(live.fetchedAt)}` : ""}
+        </footer>
       </aside>
     </main>
   );

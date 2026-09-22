@@ -54,8 +54,8 @@ function busIcon(color: string, label: string) {
   return L.divIcon({
     className: styles.busIconWrap,
     html: `<div class="${styles.busIcon}" style="--bus:${color}"><span>${label}</span></div>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 17],
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
   });
 }
 
@@ -65,8 +65,8 @@ export default function ShuttleMap({ routes, shuttles, focus }: Props) {
 
   const icons = useMemo(
     () => ({
-      express: busIcon(SHUTTLES.express.color, "E"),
-      regular: busIcon(SHUTTLES.regular.color, "R"),
+      express: busIcon(SHUTTLES.express.color, SHUTTLES.express.bullet),
+      regular: busIcon(SHUTTLES.regular.color, SHUTTLES.regular.bullet),
     }),
     [],
   );

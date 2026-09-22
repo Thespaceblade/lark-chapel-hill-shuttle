@@ -1,34 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Figtree } from "next/font/google";
 import "./globals.css";
 
-const display = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display",
-});
-
-const body = Figtree({
-  subsets: ["latin"],
-  variable: "--font-body",
-});
-
 export const metadata: Metadata = {
-  title: "Lark Shuttle Tracker",
-  description:
-    "Live Express and Regular shuttle positions for Lark Chapel Hill.",
+  title: "LARK Shuttle",
+  description: "Live Lark Chapel Hill Express and Regular shuttle tracker.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0f1a14",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

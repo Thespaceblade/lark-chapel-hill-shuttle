@@ -32,19 +32,21 @@ export type LiveShuttle = {
 
 export const SHUTTLES: Record<
   ShuttleKey,
-  { key: ShuttleKey; name: string; uuid: string; color: string }
+  { key: ShuttleKey; name: string; uuid: string; color: string; bullet: string }
 > = {
   express: {
     key: "express",
     name: "Express",
     uuid: "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
-    color: "#1f6f8b",
+    color: "#0039a6",
+    bullet: "E",
   },
   regular: {
     key: "regular",
     name: "Regular",
     uuid: "2485bb70-a546-11f1-a663-320d2d4970d9",
-    color: "#b35c1e",
+    color: "#ff6319",
+    bullet: "R",
   },
 };
 

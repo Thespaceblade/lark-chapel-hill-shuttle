@@ -9,6 +9,7 @@ import {
   larkHoldBoard,
   type LarkScheduleSnapshot,
 } from "@/lib/schedule";
+import LarkMark from "@/components/LarkMark";
 import styles from "./page.module.css";
 
 const ShuttleMap = dynamic(() => import("@/components/ShuttleMap"), {
@@ -272,8 +273,13 @@ export default function HomePage() {
         <div className={styles.boardHandle} aria-hidden />
         <header className={styles.masthead}>
           <div className={styles.brandBlock}>
-            <h1 className={styles.brand}>LARK</h1>
-            <p className={styles.brandSub}>Chapel Hill shuttle</p>
+            <div className={styles.brandRow}>
+              <LarkMark size={52} />
+              <div className={styles.brandText}>
+                <h1 className={styles.brand}>LARK</h1>
+                <p className={styles.brandSub}>Shuttle tracker</p>
+              </div>
+            </div>
           </div>
           <div className={styles.serviceRow} aria-label="Service lines">
             <LineBullet line="express" size="lg" />

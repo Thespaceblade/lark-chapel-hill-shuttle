@@ -301,12 +301,12 @@
   color: #a7a9ac;
 }
 
-/* ── mobile: ~half map / half board, compact copy ─────────────────── */
+/* ── mobile: map fills leftover; board hugs content ───────────────── */
 
 @media (max-width: 720px) {
   .shell {
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr auto;
     height: 100dvh;
     height: 100svh;
   }
@@ -323,11 +323,12 @@
     top: auto;
     left: auto;
     width: 100%;
-    max-height: none;
+    max-height: min(48dvh, 420px);
     min-height: 0;
+    height: auto;
     border-right: 0;
     border-top: 3px solid #fff;
-    padding: 0.45rem 0.85rem calc(0.55rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.35rem 0.8rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
     overflow: auto;
     overscroll-behavior: contain;
   }
@@ -338,12 +339,12 @@
 
   .masthead {
     align-items: center;
-    padding-bottom: 0.4rem;
+    padding-bottom: 0.3rem;
     gap: 0.5rem;
   }
 
   .brand {
-    font-size: 1.65rem;
+    font-size: 1.45rem;
   }
 
   /* Drop secondary branding + duplicate line bullets */
@@ -353,17 +354,17 @@
   }
 
   .lineSelect {
-    margin: 0.4rem 0 0.45rem;
+    margin: 0.3rem 0 0.35rem;
     gap: 0.25rem;
   }
 
   .lineBtn,
   .lineBtnOn {
-    min-height: 2.35rem;
+    min-height: 2.15rem;
     font-size: 0.6rem;
     letter-spacing: 0.04em;
     gap: 0.25rem;
-    padding: 0.25rem 0.2rem;
+    padding: 0.2rem 0.2rem;
   }
 
   .lineBtnText {
@@ -371,20 +372,20 @@
   }
 
   .rolls {
-    gap: 0.4rem;
+    gap: 0.3rem;
   }
 
   .roll {
-    padding: 0.45rem 0.55rem 0.4rem;
+    padding: 0.35rem 0.5rem 0.3rem;
   }
 
   .rollHead {
-    gap: 0.4rem;
-    padding-bottom: 0.35rem;
+    gap: 0.35rem;
+    padding-bottom: 0.25rem;
   }
 
   .rollTitle h2 {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .toward,
@@ -395,23 +396,23 @@
   }
 
   .liveTag {
-    font-size: 0.55rem;
-    padding: 0.18rem 0.28rem;
+    font-size: 0.52rem;
+    padding: 0.15rem 0.25rem;
   }
 
   .nextBlock {
-    padding: 0.35rem 0 0;
+    padding: 0.25rem 0 0;
   }
 
   .nextName {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .etaNum {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
   }
 
   .etaUnit {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
 }

@@ -45,6 +45,14 @@ function ageLabel(iso: string | null): string {
 
 function statusWord(s: LiveShuttle | undefined): string {
   if (!s || s.serviceStatus === "no_bus") return "no bus";
+  if (s.serviceStatus === "out_of_service") return "not in service";
+  if (s.serviceStatus === "diverted") {
+    return s.divertedTo === "regular"
+      ? "on Regular"
+      : s.divertedTo === "express"
+        ? "on Express"
+        : "diverted";
+  }
   if (s.atLark) return "at Lark";
   const st = (s.state || "").toLowerCase();
   if (st === "moving") return "en route";
@@ -64,12 +72,78 @@ function boardForShuttle(
   s: LiveShuttle | undefined,
   holdSlotMin: number | null,
 ): BoardView {
-  if (!s || s.serviceStatus === "no_bus" || !s.rideable) {
+  if (!s || s.serviceStatus === "no_bus") {
     return {
       label: "Service",
       name: "No bus on this route",
       etaMin: null,
-      detail: "May be parked, fueling, or running the other line",
+      detail: null,
+    };
+  }
+
+  // Parked / fueling / off-network — never a next-stop or departure timer.
+  if (s.serviceStatus === "out_of_service") {
+    return {
+      label: "Not in service",
+      name: s.assignmentNote ?? "Not rideable",
+      etaMin: null,
+      detail: s.address,
+    };
+  }
+
+  // Usual bus is covering the other line — still show live next stop / hold
+  // for the route it's actually on (not this line's schedule pretend).
+  if (s.serviceStatus === "diverted") {
+    const other = s.divertedTo ? SHUTTLES[s.divertedTo].name : "other line";
+    if (s.atLark && s.larkSchedule) {
+      const snap = s.larkSchedule as LarkScheduleSnapshot;
+      const hold = larkHoldBoard(snap, holdSlotMin);
+      if (hold.mode === "lark_unscheduled") {
+        return {
+          label: `On ${other}`,
+          name: "Lark Chapel Hill",
+          etaMin: null,
+          detail: `${s.assignmentNote ?? `Running ${other}`} · departure unknown`,
+        };
+      }
+      return {
+        label: `Departing (${other})`,
+        name: "Lark Chapel Hill",
+        etaMin: hold.etaMin,
+        detail: [
+          s.assignmentNote ?? `Running ${other} — not ${s.name} service`,
+          hold.departAtLabel ? `Scheduled ${hold.departAtLabel}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      };
+    }
+    if (s.nextStop) {
+      return {
+        label: `Next on ${other}`,
+        name: s.nextStop.name,
+        etaMin:
+          s.nextStop.etaMin != null
+            ? Math.max(0, Math.round(s.nextStop.etaMin))
+            : null,
+        detail:
+          s.assignmentNote ?? `Running ${other} — not ${s.name} service`,
+      };
+    }
+    return {
+      label: `On ${other}`,
+      name: s.vehicleNumber ?? "Bus",
+      etaMin: null,
+      detail: s.assignmentNote,
+    };
+  }
+
+  if (!s.rideable) {
+    return {
+      label: "Not in service",
+      name: s.assignmentNote ?? "Not rideable",
+      etaMin: null,
+      detail: null,
     };
   }
 
@@ -179,7 +253,12 @@ export default function HomePage() {
           let holdChanged = false;
           for (const s of data.shuttles) {
             const prev = holdSlots.current[s.key] ?? null;
-            if (!s.atLark) {
+            const trackHold =
+              s.atLark &&
+              (s.serviceStatus === "active" || s.serviceStatus === "diverted") &&
+              s.larkSchedule;
+
+            if (!trackHold) {
               if (prev != null) {
                 holdSlots.current[s.key] = null;
                 holdChanged = true;
@@ -305,11 +384,15 @@ export default function HomePage() {
                   <div
                     className={styles.liveTag}
                     data-state={
-                      !s || s.serviceStatus === "no_bus"
+                      !s ||
+                      s.serviceStatus === "no_bus" ||
+                      s.serviceStatus === "out_of_service"
                         ? "off"
-                        : s.atLark
+                        : s.serviceStatus === "diverted"
                           ? "idling"
-                          : (s.state || "").toLowerCase()
+                          : s.atLark
+                            ? "idling"
+                            : (s.state || "").toLowerCase()
                     }
                   >
                     {statusWord(s)}
@@ -328,9 +411,11 @@ export default function HomePage() {
                         </>
                       ) : (
                         <span className={styles.etaUnit}>
-                          {s?.atLark && s.serviceStatus === "active"
+                          {s?.serviceStatus === "active" && s.atLark
                             ? "TBD"
-                            : "—"}
+                            : s?.serviceStatus === "diverted" && s.atLark
+                              ? "TBD"
+                              : "—"}
                         </span>
                       )}
                     </div>

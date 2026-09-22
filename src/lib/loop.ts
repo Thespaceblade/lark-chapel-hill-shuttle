@@ -248,11 +248,36 @@ export class RouteLoop {
 export function etaMinutes(
   alongM: number,
   speedMph: number | null,
-  fallbackMph = 12,
+  state: string | null = null,
 ): number {
-  const mph = speedMph && speedMph > 1 ? speedMph : fallbackMph;
+  const mph = effectiveSpeedMph(speedMph, state);
   const mps = mph * 0.44704;
   return alongM / mps / 60;
+}
+
+/**
+ * Campus-shuttle speed for ETA. Instant Motive speed is noisy:
+ * idle → typical cruise; slow → trust live; fast → clamp + blend.
+ */
+export const ETA_TYPICAL_MPH = 13;
+export const ETA_MAX_MPH = 18;
+
+export function effectiveSpeedMph(
+  speedMph: number | null,
+  state: string | null = null,
+): number {
+  const st = (state || "").toLowerCase();
+  const live =
+    speedMph != null && Number.isFinite(speedMph) ? speedMph : null;
+  const isMoving = st === "moving" || (st === "" && live != null && live > 1);
+
+  if (!isMoving || live == null || live <= 1) {
+    return ETA_TYPICAL_MPH;
+  }
+
+  const capped = Math.min(ETA_MAX_MPH, live);
+  if (capped < ETA_TYPICAL_MPH) return capped;
+  return 0.55 * capped + 0.45 * ETA_TYPICAL_MPH;
 }
 
 export function parseSpeedMph(speed: string | null | undefined): number | null {

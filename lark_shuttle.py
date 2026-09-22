@@ -5,7 +5,7 @@ Commands:
   now       Live position (default)
   log       Poll and save history to SQLite
   history   Query saved positions
-  match     Snap history onto the intended loop; infer travel between pings
+  match     Snap a vehicle's history onto its assigned loop; infer travel
   discover  Print Linktree UUIDs + Motive API endpoint
 """
 
@@ -24,7 +24,12 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from route_loop import RouteLoop, infer_legs, project_pings
+from route_loop import (
+    RouteLoop,
+    infer_legs,
+    project_pings,
+    resolve_route_key,
+)
 
 LINKTREE_URL = "https://linktr.ee/larkchapelhill"
 TRACKING_ORIGIN = "https://tracking.gomotive.com"
@@ -547,14 +552,29 @@ def _normalize_shuttle_key(key: str | None) -> str | None:
 
 
 def cmd_match(args: argparse.Namespace) -> int:
-    """Snap saved pings onto the predetermined loop and infer legs between them."""
+    """Snap a vehicle's saved pings onto the assigned route loop.
+
+    ``shuttle`` is the Motive vehicle identity (``shuttle_key`` in the DB).
+    Geometry comes from ``data/route_assignment.json`` (e.g. express → regular)
+    or ``--on-route``. History rows are never rewritten.
+    """
     db_path = Path(args.db)
     if not db_path.exists():
         raise SystemExit(f"No history DB at {db_path}. Run: python3 lark_shuttle.py log")
 
-    route_key = _normalize_shuttle_key(args.shuttle) or "regular"
-    if route_key == "all":
-        raise SystemExit("match needs a shuttle: express or regular")
+    vehicle_key = _normalize_shuttle_key(args.shuttle) or "regular"
+    if vehicle_key == "all":
+        raise SystemExit("match needs a vehicle: express or regular")
+
+    on_route = _normalize_shuttle_key(getattr(args, "on_route", None))
+    if on_route == "all":
+        raise SystemExit("--on-route must be express or regular")
+    route_key = resolve_route_key(vehicle_key, on_route=on_route)
+    assignment_note = None
+    if route_key != vehicle_key:
+        assignment_note = (
+            f"Usually {vehicle_key} · projecting onto {route_key} loop"
+        )
 
     routes_path = Path(args.routes)
     try:
@@ -575,8 +595,16 @@ def cmd_match(args: argparse.Namespace) -> int:
         if len(rows) != 2:
             conn.close()
             raise SystemExit(f"Need both ping ids {args.from_id} and {args.to_id} in the DB")
+        for row in rows:
+            if row["shuttle_key"] != vehicle_key:
+                conn.close()
+                raise SystemExit(
+                    f"Ping id {row['id']} is shuttle_key={row['shuttle_key']!r}, "
+                    f"expected vehicle {vehicle_key!r}"
+                )
     else:
-        rows = query_history(conn, route_key, since, until, args.limit)
+        # Load by Motive vehicle identity; project onto assigned route geometry.
+        rows = query_history(conn, vehicle_key, since, until, args.limit)
         # query_history is newest-first; match wants chronological
         rows = list(reversed(rows))
     conn.close()
@@ -594,6 +622,9 @@ def cmd_match(args: argparse.Namespace) -> int:
         legs = infer_legs(loop, projected, min_forward_m=args.min_leg_m)
 
     payload = {
+        "vehicle": vehicle_key,
+        "route": route_key,
+        "assignment_note": assignment_note,
         "loop": {
             "name": loop.name,
             "length_m": round(loop.length_m, 1),
@@ -604,6 +635,7 @@ def cmd_match(args: argparse.Namespace) -> int:
             {
                 "id": p.get("id"),
                 "located_at": p.get("located_at"),
+                "shuttle_key": p.get("shuttle_key"),
                 "lat": p.get("lat"),
                 "lon": p.get("lon"),
                 "address": p.get("address"),
@@ -700,9 +732,12 @@ def cmd_match(args: argparse.Namespace) -> int:
         return 0
 
     print(
-        f"Loop '{loop.name}'  {loop.length_m/1000:.2f} km  "
-        f"({len(loop.points)} pts)  ← {routes_path.name}"
+        f"Vehicle '{vehicle_key}' → route '{route_key}'  "
+        f"loop {loop.length_m/1000:.2f} km ({len(loop.points)} pts)  "
+        f"← {routes_path.name}"
     )
+    if assignment_note:
+        print(assignment_note)
     print(f"{len(projected)} ping(s) snapped · {len(legs)} inferred leg(s)")
     print("─" * 78)
     for p in payload["pings"]:
@@ -811,7 +846,17 @@ def build_parser() -> argparse.ArgumentParser:
         parents=[common],
         help="Snap pings onto intended loop; infer travel between them",
     )
-    p_match.add_argument("shuttle", nargs="?", default="regular", help="express or regular")
+    p_match.add_argument(
+        "shuttle",
+        nargs="?",
+        default="regular",
+        help="Motive vehicle key (express/regular); pings loaded by shuttle_key",
+    )
+    p_match.add_argument(
+        "--on-route",
+        dest="on_route",
+        help="Override route geometry (express/regular). Default: data/route_assignment.json",
+    )
     p_match.add_argument("--hours", type=float, help="Only last N hours")
     p_match.add_argument("--since", help="ISO timestamp lower bound")
     p_match.add_argument("--until", help="ISO timestamp upper bound")

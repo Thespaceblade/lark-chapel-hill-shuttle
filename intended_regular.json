@@ -16,6 +16,7 @@
       "ridge_rd",
       "bschool_lot",
       "manning_columbia",
+      "hsl",
       "sitterson",
       "mlk_north",
       "lark"
@@ -44,6 +45,12 @@
         "name": "Business school",
         "lat": 35.90108,
         "lon": -79.04623
+      },
+      {
+        "key": "hsl",
+        "name": "Health Sciences Library",
+        "lat": 35.90558,
+        "lon": -79.05337
       },
       {
         "key": "sitterson",

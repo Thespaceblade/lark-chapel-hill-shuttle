@@ -118,7 +118,6 @@ async function fetchRawVehicle(homeKey: ShuttleKey): Promise<RawVehicle> {
 }
 
 function emptyService(key: ShuttleKey): LiveShuttle {
-  const snap = larkScheduleSnapshot(key);
   return {
     key,
     name: SHUTTLES[key].name,
@@ -137,16 +136,47 @@ function emptyService(key: ShuttleKey): LiveShuttle {
     atLark: false,
     rideable: false,
     serviceStatus: "no_bus",
+    divertedTo: null,
     assignmentNote: null,
-    larkSchedule: {
-      headwayMin: snap.headwayMin,
-      nextSlotMin: snap.nextSlotMin,
-      prevSlotMin: snap.prevSlotMin,
-      minutesUntilNext: snap.minutesUntilNext,
-      minutesSincePrev: snap.minutesSincePrev,
-      nextDepartAtLabel: snap.nextDepartAtLabel,
-      prevDepartAtLabel: snap.prevDepartAtLabel,
-    },
+    // No schedule → UI must not show a departure countdown.
+    larkSchedule: null,
+    loopFrac: null,
+    offLoopM: null,
+  };
+}
+
+function outOfServiceBoard(
+  key: ShuttleKey,
+  raw: RawVehicle,
+  reason: string | null,
+): LiveShuttle {
+  const atLark =
+    raw.lat != null && raw.lon != null ? isAtLark(raw.lat, raw.lon) : false;
+  return {
+    key,
+    name: SHUTTLES[key].name,
+    vehicleNumber: raw.vehicleNumber,
+    vehicleHome: raw.homeKey,
+    state: raw.state,
+    speed: raw.speed,
+    address: raw.address,
+    lat: raw.lat,
+    lon: raw.lon,
+    bearing: raw.bearing,
+    compass: raw.compass,
+    locatedAt: raw.locatedAt,
+    mapsUrl:
+      raw.lat != null && raw.lon != null
+        ? `https://www.google.com/maps?q=${raw.lat},${raw.lon}`
+        : null,
+    nextStop: null,
+    atLark,
+    rideable: false,
+    serviceStatus: "out_of_service",
+    divertedTo: null,
+    assignmentNote: reason ?? "Not in service",
+    // Parked/fueling: never show Lark departure timers.
+    larkSchedule: null,
     loopFrac: null,
     offLoopM: null,
   };
@@ -156,6 +186,7 @@ function buildServiceShuttle(
   service: ShuttleKey,
   raw: RawVehicle,
   note: string | null,
+  opts?: { divertedFrom?: ShuttleKey },
 ): LiveShuttle {
   const loop = getLoop(service);
   const atLark =
@@ -164,6 +195,7 @@ function buildServiceShuttle(
   let nextStop: LiveShuttle["nextStop"] = null;
   let loopFrac: number | null = null;
   let offLoopM: number | null = null;
+  const diverted = opts?.divertedFrom != null;
 
   if (raw.lat != null && raw.lon != null) {
     const proj = loop.project(raw.lat, raw.lon, raw.bearing);
@@ -176,15 +208,17 @@ function buildServiceShuttle(
           key: nxt.key,
           name: nxt.name,
           alongM: Math.round(nxt.alongM),
-          etaMin: Math.round(etaMinutes(nxt.alongM, raw.speedMph) * 10) / 10,
+          etaMin: Math.round(
+            etaMinutes(nxt.alongM, raw.speedMph, raw.state) * 10,
+          ) / 10,
         };
       }
     }
   }
 
   return {
-    key: service,
-    name: SHUTTLES[service].name,
+    key: diverted ? opts!.divertedFrom! : service,
+    name: SHUTTLES[diverted ? opts!.divertedFrom! : service].name,
     vehicleNumber: raw.vehicleNumber,
     vehicleHome: raw.homeKey,
     state: raw.state,
@@ -201,9 +235,11 @@ function buildServiceShuttle(
         : null,
     nextStop,
     atLark,
-    rideable: true,
-    serviceStatus: "active",
+    rideable: !diverted,
+    serviceStatus: diverted ? "diverted" : "active",
+    divertedTo: diverted ? service : null,
     assignmentNote: note,
+    // Diverted boards use the route they're actually on for Lark holds.
     larkSchedule: {
       headwayMin: snap.headwayMin,
       nextSlotMin: snap.nextSlotMin,
@@ -251,14 +287,47 @@ export async function fetchLiveBoard(): Promise<{
 
   const assignment = assignServices(inferred);
   const byHome = new Map(raws.map((r) => [r.homeKey, r]));
+  const inferredByHome = new Map(inferred.map((v) => [v.homeKey, v]));
 
   const shuttles: LiveShuttle[] = (["express", "regular"] as ShuttleKey[]).map(
     (service) => {
       const pick = assignment[service];
-      if (!pick) return emptyService(service);
-      const raw = byHome.get(pick.homeKey);
-      if (!raw) return emptyService(service);
-      return buildServiceShuttle(service, raw, pick.statusReason);
+      if (pick) {
+        const raw = byHome.get(pick.homeKey);
+        if (!raw) return emptyService(service);
+        return buildServiceShuttle(service, raw, pick.statusReason);
+      }
+
+      // No bus assigned to this service — check the usual vehicle.
+      const homeInf = inferredByHome.get(service);
+      const homeRaw = byHome.get(service);
+      if (!homeInf || !homeRaw) return emptyService(service);
+
+      // Usual bus is covering the other line: keep live next-stop updates
+      // on this board, but mark not rideable for this service.
+      if (
+        homeInf.status === "in_service" &&
+        homeInf.inferredService &&
+        homeInf.inferredService !== service
+      ) {
+        const other = homeInf.inferredService;
+        const note =
+          homeInf.statusReason ??
+          `Usually ${SHUTTLES[service].name} · running ${SHUTTLES[other].name}`;
+        return buildServiceShuttle(other, homeRaw, note, {
+          divertedFrom: service,
+        });
+      }
+
+      // Usual bus is parked / fueling / off-network.
+      if (
+        homeInf.status === "out_of_service" ||
+        homeInf.status === "deadheading"
+      ) {
+        return outOfServiceBoard(service, homeRaw, homeInf.statusReason);
+      }
+
+      return emptyService(service);
     },
   );
 

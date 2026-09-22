@@ -555,8 +555,8 @@ def cmd_match(args: argparse.Namespace) -> int:
     """Snap a vehicle's saved pings onto the assigned route loop.
 
     ``shuttle`` is the Motive vehicle identity (``shuttle_key`` in the DB).
-    Geometry comes from ``data/route_assignment.json`` (e.g. express → regular)
-    or ``--on-route``. History rows are never rewritten.
+    Geometry is auto-inferred from GPS fit (or ``data/route_assignment.json`` /
+    ``--on-route``). History rows are never rewritten.
     """
     db_path = Path(args.db)
     if not db_path.exists():
@@ -569,19 +569,8 @@ def cmd_match(args: argparse.Namespace) -> int:
     on_route = _normalize_shuttle_key(getattr(args, "on_route", None))
     if on_route == "all":
         raise SystemExit("--on-route must be express or regular")
-    route_key = resolve_route_key(vehicle_key, on_route=on_route)
-    assignment_note = None
-    if route_key != vehicle_key:
-        assignment_note = (
-            f"Usually {vehicle_key} · projecting onto {route_key} loop"
-        )
 
     routes_path = Path(args.routes)
-    try:
-        loop = RouteLoop.from_routes_file(route_key, routes_path)
-    except KeyError as exc:
-        raise SystemExit(str(exc)) from exc
-
     conn = connect_db(db_path)
     since, until = _history_time_bounds(args)
 
@@ -603,7 +592,7 @@ def cmd_match(args: argparse.Namespace) -> int:
                     f"expected vehicle {vehicle_key!r}"
                 )
     else:
-        # Load by Motive vehicle identity; project onto assigned route geometry.
+        # Load by Motive vehicle identity; project onto assigned/inferred geometry.
         rows = query_history(conn, vehicle_key, since, until, args.limit)
         # query_history is newest-first; match wants chronological
         rows = list(reversed(rows))
@@ -613,6 +602,25 @@ def cmd_match(args: argparse.Namespace) -> int:
     if len(pings) < 1:
         print("No saved pings to match.")
         return 0
+
+    route_key, assign_meta = resolve_route_key(
+        vehicle_key,
+        on_route=on_route,
+        pings=pings,
+        routes_path=routes_path,
+    )
+    assignment_note = None
+    if route_key != vehicle_key:
+        assignment_note = (
+            f"Usually {vehicle_key} · projecting onto {route_key} loop"
+        )
+    elif assign_meta.get("mode") == "auto":
+        assignment_note = f"Auto: {vehicle_key} on home {route_key} loop"
+
+    try:
+        loop = RouteLoop.from_routes_file(route_key, routes_path)
+    except KeyError as exc:
+        raise SystemExit(str(exc)) from exc
 
     projected = project_pings(loop, pings)
 
@@ -625,6 +633,7 @@ def cmd_match(args: argparse.Namespace) -> int:
         "vehicle": vehicle_key,
         "route": route_key,
         "assignment_note": assignment_note,
+        "assignment": assign_meta,
         "loop": {
             "name": loop.name,
             "length_m": round(loop.length_m, 1),
@@ -733,11 +742,19 @@ def cmd_match(args: argparse.Namespace) -> int:
 
     print(
         f"Vehicle '{vehicle_key}' → route '{route_key}'  "
+        f"[{assign_meta.get('mode')}: {assign_meta.get('reason')}]  "
         f"loop {loop.length_m/1000:.2f} km ({len(loop.points)} pts)  "
         f"← {routes_path.name}"
     )
     if assignment_note:
         print(assignment_note)
+    fits = assign_meta.get("fits") or {}
+    if fits:
+        bits = [
+            f"{k} med={v['median_off_m']}m on={100*v['on_route_frac']:.0f}%"
+            for k, v in fits.items()
+        ]
+        print("Fit: " + " · ".join(bits))
     print(f"{len(projected)} ping(s) snapped · {len(legs)} inferred leg(s)")
     print("─" * 78)
     for p in payload["pings"]:
@@ -855,7 +872,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_match.add_argument(
         "--on-route",
         dest="on_route",
-        help="Override route geometry (express/regular). Default: data/route_assignment.json",
+        help="Force route geometry (express/regular). Default: auto GPS fit",
     )
     p_match.add_argument("--hours", type=float, help="Only last N hours")
     p_match.add_argument("--since", help="ISO timestamp lower bound")

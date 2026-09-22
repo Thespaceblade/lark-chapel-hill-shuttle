@@ -26,6 +26,18 @@ export type LiveShuttle = {
     alongM: number;
     etaMin: number | null;
   } | null;
+  /** True when GPS is inside the Lark curb geofence. */
+  atLark: boolean;
+  /** Clock schedule snapshot for Lark departures (Chapel Hill time). */
+  larkSchedule: {
+    headwayMin: number;
+    nextSlotMin: number;
+    prevSlotMin: number;
+    minutesUntilNext: number;
+    minutesSincePrev: number;
+    nextDepartAtLabel: string;
+    prevDepartAtLabel: string;
+  } | null;
   loopFrac: number | null;
   offLoopM: number | null;
 };

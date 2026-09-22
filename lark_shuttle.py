@@ -8,6 +8,9 @@ Commands:
   match     Snap a vehicle's history onto its assigned loop; infer travel
   label     Backfill route_key on all pings; export clean train set
   discover  Print Linktree UUIDs + Motive API endpoint
+
+Daily roster (America/New_York): Shuttle 1 is Express until 2:00 PM, then
+Regular; Shuttle 2 swaps the other way. Physical Motive UUIDs are fixed.
 """
 
 from __future__ import annotations
@@ -54,6 +57,19 @@ FALLBACK = {
     ),
 }
 
+# Shuttle 1 runs Express until 2:00 PM America/New_York, then Regular
+# (Shuttle 2 swaps the other way). Physical Motive UUIDs stay fixed.
+ROSTER_SWAP_MINUTE = 14 * 60
+TZ_CHAPEL_HILL = "America/New_York"
+
+# Stable Motive share UUIDs (morning paint / history shuttle_key). Prefer these
+# over Linktree title keywords — titles now say things like
+# "Shuttle 1: Express → Regular (starting at 2 PM)".
+KNOWN_SHARE_UUIDS = {
+    "0c5a01f2-a549-11f1-83ea-4247aa532d4a": "shuttle1",  # express share slot
+    "2485bb70-a546-11f1-a663-320d2d4970d9": "shuttle2",  # regular share slot
+}
+
 
 # ── HTTP / discovery ─────────────────────────────────────────────────────────
 
@@ -66,6 +82,68 @@ def http_get(url: str, headers: dict[str, str] | None = None, timeout: float = 2
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return resp.read()
+
+
+def chapel_hill_minutes_of_day(when: datetime | None = None) -> int:
+    """Whole minutes since local midnight in America/New_York."""
+    when = when or datetime.now(timezone.utc)
+    # ZoneInfo needs Python 3.9+; fall back to fixed offset estimate if missing.
+    try:
+        from zoneinfo import ZoneInfo
+
+        local = when.astimezone(ZoneInfo(TZ_CHAPEL_HILL))
+    except Exception:
+        local = when.astimezone(timezone(timedelta(hours=-4)))
+    return local.hour * 60 + local.minute
+
+
+def roster_swapped(when: datetime | None = None) -> bool:
+    return chapel_hill_minutes_of_day(when) >= ROSTER_SWAP_MINUTE
+
+
+def home_service_for_vehicle(vehicle_id: str, when: datetime | None = None) -> str:
+    """Usual passenger service for a physical bus (see ROSTER_SWAP_MINUTE)."""
+    swapped = roster_swapped(when)
+    if vehicle_id == "shuttle1":
+        return "regular" if swapped else "express"
+    if vehicle_id == "shuttle2":
+        return "express" if swapped else "regular"
+    return vehicle_id
+
+
+def apply_daily_roster(
+    shuttles: list[dict[str, str]], when: datetime | None = None
+) -> list[dict[str, str]]:
+    """Annotate buses with today's usual home service — do not rewrite history keys.
+
+    History / Motive share slots stay morning paint (`express` = Shuttle 1 UUID,
+    `regular` = Shuttle 2 UUID). `home_service` is what riders should expect
+    for that physical bus right now (swaps at 2:00 PM ET).
+    """
+    out: list[dict[str, str]] = []
+    for s in shuttles:
+        vehicle_id = s.get("vehicle_id") or (
+            "shuttle1"
+            if s["key"] == "express"
+            else "shuttle2"
+            if s["key"] == "regular"
+            else s["key"]
+        )
+        # Stable share-slot key for history (never remapped by clock).
+        share_key = (
+            "express"
+            if vehicle_id == "shuttle1"
+            else "regular"
+            if vehicle_id == "shuttle2"
+            else s["key"]
+        )
+        row = dict(s)
+        row["vehicle_id"] = vehicle_id
+        row["key"] = share_key
+        row["home_service"] = home_service_for_vehicle(vehicle_id, when)
+        row["name"] = s.get("share_name") or s.get("name") or share_key
+        out.append(row)
+    return out
 
 
 def discover_shuttles_from_linktree(url: str = LINKTREE_URL) -> list[dict[str, str]]:
@@ -95,18 +173,32 @@ def discover_shuttles_from_linktree(url: str = LINKTREE_URL) -> list[dict[str, s
             continue
         seen.add(uuid)
         lower = title.lower()
-        if "express" in lower or "shuttle 1" in lower or "tracker 1" in lower:
-            key = "express"
-        elif "regular" in lower or "shuttle 2" in lower or "tracker 2" in lower:
-            key = "regular"
+        # Prefer known Motive UUIDs — Linktree titles can mention both services.
+        if uuid in KNOWN_SHARE_UUIDS:
+            vehicle_id = KNOWN_SHARE_UUIDS[uuid]
+        elif "shuttle 1" in lower or "tracker 1" in lower:
+            vehicle_id = "shuttle1"
+        elif "shuttle 2" in lower or "tracker 2" in lower:
+            vehicle_id = "shuttle2"
+        elif "express" in lower and "regular" not in lower:
+            vehicle_id = "shuttle1"
+        elif "regular" in lower and "express" not in lower:
+            vehicle_id = "shuttle2"
         else:
-            key = f"shuttle_{len(shuttles) + 1}"
+            vehicle_id = f"shuttle_{len(shuttles) + 1}"
         shuttles.append(
-            {"key": key, "name": title, "uuid": uuid, "tracking_url": link}
+            {
+                "vehicle_id": vehicle_id,
+                "key": vehicle_id,  # remapped by apply_daily_roster
+                "share_name": title,
+                "name": title,
+                "uuid": uuid,
+                "tracking_url": link,
+            }
         )
     if not shuttles:
         raise RuntimeError(f"No Motive shuttle share links found on {url}")
-    return shuttles
+    return apply_daily_roster(shuttles)
 
 
 def discover_motive_live_share_api() -> dict[str, str]:
@@ -281,21 +373,35 @@ def format_human(summary: dict[str, Any]) -> str:
 
 def resolve_keys(which: str, shuttles: list[dict[str, str]]) -> list[dict[str, str]]:
     by_key = {s["key"]: s for s in shuttles}
+    by_vehicle = {s.get("vehicle_id", s["key"]): s for s in shuttles}
     if which == "all":
         return shuttles
-    aliases = {
-        "1": "express",
-        "shuttle1": "express",
-        "2": "regular",
-        "shuttle2": "regular",
+    raw = which.lower().strip()
+    # Physical bus aliases always follow Shuttle 1 / 2, not morning paint.
+    vehicle_aliases = {
+        "1": "shuttle1",
+        "shuttle1": "shuttle1",
+        "2": "shuttle2",
+        "shuttle2": "shuttle2",
     }
-    key = aliases.get(which.lower().strip(), which.lower().strip())
-    if key in by_key:
-        return [by_key[key]]
-    matches = [s for s in shuttles if key in s["key"] or key in s["name"].lower()]
+    if raw in vehicle_aliases:
+        vid = vehicle_aliases[raw]
+        if vid in by_vehicle:
+            return [by_vehicle[vid]]
+    if raw in by_key:
+        return [by_key[raw]]
+    matches = [
+        s
+        for s in shuttles
+        if raw in s["key"]
+        or raw in s["name"].lower()
+        or raw in (s.get("vehicle_id") or "")
+    ]
     if len(matches) == 1:
         return matches
-    known = ", ".join(s["key"] for s in shuttles)
+    known = ", ".join(
+        f"{s['key']}({s.get('vehicle_id', '?')})" for s in shuttles
+    )
     raise SystemExit(f"Unknown shuttle '{which}'. Known: {known}, all")
 
 
@@ -983,13 +1089,13 @@ def _history_time_bounds(args: argparse.Namespace) -> tuple[datetime | None, dat
 def _normalize_shuttle_key(key: str | None) -> str | None:
     if not key or key == "all":
         return key
-    aliases = {
-        "1": "express",
-        "shuttle1": "express",
-        "2": "regular",
-        "shuttle2": "regular",
-    }
-    return aliases.get(key.lower(), key.lower())
+    raw = key.lower()
+    # Physical aliases → stable Motive share slots (history keys), not clock home.
+    if raw in ("1", "shuttle1"):
+        return "express"
+    if raw in ("2", "shuttle2"):
+        return "regular"
+    return raw
 
 
 def cmd_match(args: argparse.Namespace) -> int:
@@ -1220,10 +1326,21 @@ def cmd_match(args: argparse.Namespace) -> int:
 
 
 def cmd_discover(args: argparse.Namespace, shuttles: list[dict[str, str]], api: dict[str, str]) -> int:
+    swapped = roster_swapped()
     print(
         json.dumps(
             {
                 "linktree": args.linktree,
+                "roster": {
+                    "timezone": TZ_CHAPEL_HILL,
+                    "swap_at": "2:00 PM",
+                    "swapped_now": swapped,
+                    "note": (
+                        "Shuttle 1 → Regular, Shuttle 2 → Express"
+                        if swapped
+                        else "Shuttle 1 → Express, Shuttle 2 → Regular"
+                    ),
+                },
                 "shuttles": shuttles,
                 "motive_api": {
                     "endpoint": api["endpoint"],

@@ -10,6 +10,7 @@ import {
 import { RouteLoop, etaMinutes, parseSpeedMph } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
+import { isAtLark, larkScheduleSnapshot } from "./schedule";
 
 type MotivePayload = {
   live_share?: {
@@ -93,6 +94,17 @@ export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
   let nextStop: LiveShuttle["nextStop"] = null;
   let loopFrac: number | null = null;
   let offLoopM: number | null = null;
+  const atLark = lat != null && lon != null ? isAtLark(lat, lon) : false;
+  const snap = larkScheduleSnapshot(key);
+  const larkSchedule = {
+    headwayMin: snap.headwayMin,
+    nextSlotMin: snap.nextSlotMin,
+    prevSlotMin: snap.prevSlotMin,
+    minutesUntilNext: snap.minutesUntilNext,
+    minutesSincePrev: snap.minutesSincePrev,
+    nextDepartAtLabel: snap.nextDepartAtLabel,
+    prevDepartAtLabel: snap.prevDepartAtLabel,
+  };
 
   if (lat != null && lon != null) {
     const loop = getLoop(key);
@@ -100,15 +112,18 @@ export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
     const proj = loop.project(lat, lon, bearing);
     loopFrac = proj.loopFrac;
     offLoopM = Math.round(proj.offsetM * 10) / 10;
-    const nxt = loop.nextStop(proj);
-    if (nxt) {
-      const mph = parseSpeedMph(speed);
-      nextStop = {
-        key: nxt.key,
-        name: nxt.name,
-        alongM: Math.round(nxt.alongM),
-        etaMin: Math.round(etaMinutes(nxt.alongM, mph) * 10) / 10,
-      };
+    // While holding at Lark, next-stop ETA is replaced by departure board on the client.
+    if (!atLark) {
+      const nxt = loop.nextStop(proj);
+      if (nxt) {
+        const mph = parseSpeedMph(speed);
+        nextStop = {
+          key: nxt.key,
+          name: nxt.name,
+          alongM: Math.round(nxt.alongM),
+          etaMin: Math.round(etaMinutes(nxt.alongM, mph) * 10) / 10,
+        };
+      }
     }
   }
 
@@ -129,6 +144,8 @@ export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
         ? `https://www.google.com/maps?q=${lat},${lon}`
         : null,
     nextStop,
+    atLark,
+    larkSchedule,
     loopFrac,
     offLoopM,
   };

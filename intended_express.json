@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-18T21:32:42Z",
+  "generated_at": "2026-09-22T14:20:28Z",
   "key": "express",
   "vehicle_check": [
     "Lark Chapel Hill 1"
@@ -19,14 +19,14 @@
       {
         "key": "lark",
         "name": "Lark Chapel Hill",
-        "lat": 35.919,
-        "lon": -79.05419
+        "lat": 35.91913,
+        "lon": -79.05343
       },
       {
         "key": "memorial",
         "name": "Memorial Hall",
-        "lat": 35.9111,
-        "lon": -79.05198
+        "lat": 35.91147,
+        "lon": -79.05222
       }
     ],
     "line": [

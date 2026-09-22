@@ -30,11 +30,18 @@ export type LiveShuttle = {
   } | null;
   /** True when GPS is inside the Lark curb geofence. */
   atLark: boolean;
-  /** False when parked/off-route/gas — not boarding. */
+  /** False when parked/off-route/gas/diverted — not boarding this line. */
   rideable: boolean;
-  /** active = bus on this service; no_bus = nothing assigned right now. */
-  serviceStatus: "active" | "no_bus";
-  /** e.g. "Usually Express · running Regular" */
+  /**
+   * active = bus on this service;
+   * diverted = usual bus is covering the other line (still live-tracked);
+   * out_of_service = usual bus parked/fueling/off-network;
+   * no_bus = nothing to show.
+   */
+  serviceStatus: "active" | "diverted" | "out_of_service" | "no_bus";
+  /** When diverted, which line the bus is actually running. */
+  divertedTo: ShuttleKey | null;
+  /** e.g. "Usually Express · running Regular" / parked reason */
   assignmentNote: string | null;
   /** Clock schedule snapshot for Lark departures (Chapel Hill time). */
   larkSchedule: {

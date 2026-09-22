@@ -14,12 +14,10 @@ out/
 *.pyc
 __pycache__/
 route_map_preview.jpg
-# Runtime / local DB (live logger writes here)
-shuttle_history.db
+# Runtime / local DB (live logger writes here — root only)
+/shuttle_history.db
 
 # Snapshots under data/ ARE committed by scripts/push_history.sh
-# data/shuttle_history.db
-# data/history.json
 subway-*.jpg
 subway-*.png
 *.tsbuildinfo

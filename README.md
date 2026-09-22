@@ -33,7 +33,14 @@ python3 lark_shuttle.py history express --hours 6
 python3 lark_shuttle.py match regular
 ```
 
-History: `shuttle_history.db` (gitignored). Routes: `intended_routes.json` / `data/intended_routes.json`.
+History: live logger writes `shuttle_history.db` (gitignored). Snapshots are
+committed to `data/shuttle_history.db` + `data/history.json` by
+`scripts/push_history.sh` (also runs every 2h via `scripts/push_history_loop.sh`).
+
+```bash
+bash scripts/push_history.sh          # snapshot + push now
+bash scripts/push_history_loop.sh     # every 2 hours
+```
 
 ## Notes
 

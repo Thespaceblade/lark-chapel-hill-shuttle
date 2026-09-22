@@ -27,6 +27,7 @@ type Props = {
   routes: RoutesResponse | null;
   shuttles: LiveShuttle[];
   focus: ShuttleKey | "both";
+  holdSlots?: Partial<Record<ShuttleKey, number | null>>;
 };
 
 function FitToRoutes({
@@ -78,7 +79,12 @@ function busIcon(color: string, label: string) {
   });
 }
 
-export default function ShuttleMap({ routes, shuttles, focus }: Props) {
+export default function ShuttleMap({
+  routes,
+  shuttles,
+  focus,
+  holdSlots,
+}: Props) {
   const showExpress = focus === "both" || focus === "express";
   const showRegular = focus === "both" || focus === "regular";
 
@@ -170,9 +176,16 @@ export default function ShuttleMap({ routes, shuttles, focus }: Props) {
               <Tooltip direction="top" offset={[0, -12]} permanent={false}>
                 <strong>{s.name}</strong>
                 <br />
-                {s.state}
+                {s.atLark ? "at Lark" : s.state}
                 {s.speed ? ` · ${s.speed}` : ""}
-                {s.nextStop ? (
+                {s.atLark ? (
+                  <>
+                    <br />
+                    {holdSlots?.[s.key] != null
+                      ? "Holding for scheduled departure"
+                      : "At Lark"}
+                  </>
+                ) : s.nextStop ? (
                   <>
                     <br />
                     Next: {s.nextStop.name}

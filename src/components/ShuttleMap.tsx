@@ -94,8 +94,8 @@ function busIcon(
       ${arrow}
       <div class="${styles.busIcon}" style="--bus:${color}"><span>${label}</span></div>
     </div>`,
-    iconSize: [44, 44],
-    iconAnchor: [22, 22],
+    iconSize: [56, 56],
+    iconAnchor: [28, 28],
   });
 }
 
@@ -209,16 +209,14 @@ export default function ShuttleMap({
             const paint = v.rideable && service ? SHUTTLES[service] : null;
             const color = paint?.color ?? "#6b7280";
             const label = paint?.bullet ?? "·";
-            const moving =
-              v.rideable &&
-              (v.state || "").toLowerCase() === "moving" &&
-              !v.atLark;
+            const showArrow =
+              v.rideable && !v.atLark && v.bearing != null;
             const icon = busIcon(
               paint?.key ?? "oos",
               color,
               label,
               v.bearing,
-              moving,
+              showArrow,
             );
             return (
               <Marker
@@ -248,14 +246,14 @@ export default function ShuttleMap({
           const s = m.s;
           if (s.lat == null || s.lon == null) return null;
           const meta = SHUTTLES[s.key];
-          const moving =
-            (s.state || "").toLowerCase() === "moving" && !s.atLark;
+          const showArrow =
+            s.rideable && !s.atLark && s.bearing != null;
           const icon = busIcon(
             s.key,
             meta.color,
             meta.bullet,
             s.bearing,
-            moving,
+            showArrow,
           );
           return (
             <Marker key={s.key} position={[s.lat, s.lon]} icon={icon}>

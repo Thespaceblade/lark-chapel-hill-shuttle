@@ -18,12 +18,14 @@
 .busIconWrap {
   background: transparent;
   border: none;
+  overflow: visible !important;
 }
 
 .busMarker {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
+  overflow: visible;
 }
 
 .busArrowRing {
@@ -33,24 +35,25 @@
   place-items: start center;
   pointer-events: none;
   transition: transform 0.35s ease;
+  overflow: visible;
 }
 
 .busArrow {
   width: 0;
   height: 0;
-  margin-top: -2px;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 12px solid #fff;
-  filter: drop-shadow(0 0 1px #000) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+  margin-top: -4px;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 18px solid #fff;
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
 }
 
 .busArrow[data-line="express"] {
-  border-bottom-color: #7eb6ff;
+  border-bottom-color: #93c5fd;
 }
 
 .busArrow[data-line="regular"] {
-  border-bottom-color: #ffb087;
+  border-bottom-color: #fdba74;
 }
 
 .busIcon {
@@ -70,6 +73,7 @@
   font-size: 1rem;
   letter-spacing: -0.02em;
   box-shadow: 0 0 0 3px #000, 0 0 0 5px #fff;
+  z-index: 1;
 }
 
 .busIcon span {
@@ -78,8 +82,8 @@
 
 @media (max-width: 720px) {
   .busMarker {
-    width: 40px;
-    height: 40px;
+    width: 52px;
+    height: 52px;
   }
 
   .busIcon {
@@ -89,8 +93,9 @@
   }
 
   .busArrow {
-    border-left-width: 6px;
-    border-right-width: 6px;
-    border-bottom-width: 10px;
+    border-left-width: 9px;
+    border-right-width: 9px;
+    border-bottom-width: 16px;
+    margin-top: -3px;
   }
 }

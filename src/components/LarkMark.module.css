@@ -1,0 +1,9 @@
+.mark {
+  display: block;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #000;
+  background: #fccc0a;
+}

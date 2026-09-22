@@ -11,6 +11,9 @@ next-env.d.ts
 node_modules/
 out/
 *.png
+!public/lark-mark.png
+!src/app/icon.png
+!src/app/apple-icon.png
 *.pyc
 __pycache__/
 route_map_preview.jpg

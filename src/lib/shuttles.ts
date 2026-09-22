@@ -55,13 +55,25 @@ export const MOTIVE = {
   userAgent: "lark-shuttle-web/0.1 (+vercel)",
 };
 
-/** Server-only Motive share key — set MOTIVE_WEB_SHARE_API_KEY in env. */
+/**
+ * Public Motive web-share key (same value embedded in tracking.gomotive.com JS /
+ * lark_shuttle.py FALLBACK). Env MOTIVE_WEB_SHARE_API_KEY overrides when set.
+ */
+export const MOTIVE_PUBLIC_WEB_SHARE_API_KEY =
+  "3gCAa2VxLV3nlJfk7EhzJUEe5lg3IU9b50sNyOfUSSE6Fg2ACZr6GK5KqpMW55rn";
+
+/** Strip paste mistakes (quotes/whitespace) from env values. */
+export function normalizeMotiveApiKey(raw?: string | null): string | undefined {
+  const trimmed = raw?.trim();
+  if (!trimmed) return undefined;
+  const unquoted = trimmed.replace(/^["']|["']$/g, "").trim();
+  return unquoted || undefined;
+}
+
+/** Server-only Motive share key — env override, else public share key. */
 export function getMotiveApiKey(): string {
-  const key = process.env.MOTIVE_WEB_SHARE_API_KEY?.trim();
-  if (!key) {
-    throw new Error(
-      "Missing MOTIVE_WEB_SHARE_API_KEY. Add it in Vercel → Project → Settings → Environment Variables (or web/.env.local).",
-    );
-  }
-  return key;
+  return (
+    normalizeMotiveApiKey(process.env.MOTIVE_WEB_SHARE_API_KEY) ??
+    MOTIVE_PUBLIC_WEB_SHARE_API_KEY
+  );
 }

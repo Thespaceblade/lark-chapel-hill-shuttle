@@ -29,33 +29,24 @@ type Props = {
   focus: ShuttleKey | "both";
 };
 
-function FitBounds({
+function FitToRoutes({
   routes,
-  shuttles,
   focus,
 }: {
   routes: RoutesResponse | null;
-  shuttles: LiveShuttle[];
   focus: ShuttleKey | "both";
 }) {
   const map = useMap();
   useEffect(() => {
+    if (!routes) return;
     const pts: [number, number][] = [];
-    if (routes) {
-      if (focus === "both" || focus === "express") pts.push(...routes.express.line);
-      if (focus === "both" || focus === "regular") pts.push(...routes.regular.line);
-    }
-    for (const s of shuttles) {
-      if (s.lat != null && s.lon != null) {
-        if (focus === "both" || focus === s.key) pts.push([s.lat, s.lon]);
-      }
-    }
+    if (focus === "both" || focus === "express") pts.push(...routes.express.line);
+    if (focus === "both" || focus === "regular") pts.push(...routes.regular.line);
     if (pts.length >= 2) {
       map.fitBounds(pts, { padding: [48, 48], maxZoom: 15 });
-    } else if (pts.length === 1) {
-      map.setView(pts[0], 14);
     }
-  }, [map, routes, shuttles, focus]);
+    // Intentionally ignore shuttle positions — live updates should move markers only.
+  }, [map, routes, focus]);
   return null;
 }
 
@@ -100,7 +91,7 @@ export default function ShuttleMap({ routes, shuttles, focus }: Props) {
           maxZoom={16}
           opacity={0.85}
         />
-        <FitBounds routes={routes} shuttles={shuttles} focus={focus} />
+        <FitToRoutes routes={routes} focus={focus} />
 
         {routes && showExpress ? (
           <Polyline

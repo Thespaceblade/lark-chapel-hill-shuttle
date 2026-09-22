@@ -6,6 +6,7 @@ Commands:
   log       Poll and save history to SQLite
   history   Query saved positions
   match     Snap a vehicle's history onto its assigned loop; infer travel
+  label     Backfill route_key on all pings; export clean train set
   discover  Print Linktree UUIDs + Motive API endpoint
 """
 
@@ -30,6 +31,7 @@ from route_loop import (
     project_pings,
     resolve_route_key,
 )
+from label_route import label_all_pings, raw_geometry_label
 
 LINKTREE_URL = "https://linktr.ee/larkchapelhill"
 TRACKING_ORIGIN = "https://tracking.gomotive.com"
@@ -327,9 +329,35 @@ def connect_db(path: Path) -> sqlite3.Connection:
         "CREATE INDEX IF NOT EXISTS idx_pings_shuttle_time "
         "ON pings(shuttle_key, located_at)"
     )
+    _ensure_route_label_columns(conn)
     conn.commit()
     return conn
 
+
+_ROUTE_LABEL_COLUMNS: dict[str, str] = {
+    "route_key": "TEXT",
+    "route_status": "TEXT",
+    "route_off_m": "REAL",
+    "express_off_m": "REAL",
+    "regular_off_m": "REAL",
+    "train_ok": "INTEGER",
+    "label_reason": "TEXT",
+}
+
+
+def _ensure_route_label_columns(conn: sqlite3.Connection) -> None:
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(pings)")}
+    for col, typ in _ROUTE_LABEL_COLUMNS.items():
+        if col not in existing:
+            conn.execute(f"ALTER TABLE pings ADD COLUMN {col} {typ}")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_pings_route_time "
+        "ON pings(route_key, located_at)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_pings_train "
+        "ON pings(train_ok, route_key, located_at)"
+    )
 
 def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
     """Insert a ping if Motive's located_at is new. Returns True if inserted."""
@@ -337,18 +365,65 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
         return False
     if not summary.get("located_at"):
         return False
+
+    from label_route import CLEAR_MARGIN_M, ON_ROUTE_MAX_M, STICKY_MAX_M
+
     recorded_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    vehicle_key = summary["key"]
+    prev = conn.execute(
+        """
+        SELECT route_key, route_status FROM pings
+        WHERE shuttle_key = ? AND route_status IS NOT NULL
+        ORDER BY located_at DESC, id DESC LIMIT 1
+        """,
+        (vehicle_key,),
+    ).fetchone()
+    prev_route = None
+    if prev and prev["route_key"] and prev["route_status"] in ("on_route", "at_lark"):
+        prev_route = prev["route_key"]
+
+    lab = raw_geometry_label(
+        float(summary["lat"]),
+        float(summary["lon"]),
+        vehicle_key=vehicle_key,
+        entity_state=summary.get("state"),
+    )
+    route_key = lab.route_key
+    route_status = lab.route_status
+    reason = lab.reason
+    train_ok = bool(lab.train_ok)
+    route_off_m = lab.route_off_m
+
+    if route_status == "on_route" and prev_route:
+        e_off = lab.express_off_m if lab.express_off_m is not None else 1e9
+        r_off = lab.regular_off_m if lab.regular_off_m is not None else 1e9
+        sticky_off = e_off if prev_route == "express" else r_off
+        other_off = r_off if prev_route == "express" else e_off
+        if sticky_off <= STICKY_MAX_M and not (
+            other_off + CLEAR_MARGIN_M < sticky_off and other_off <= ON_ROUTE_MAX_M
+        ):
+            route_key = prev_route
+            route_off_m = round(sticky_off, 1)
+            reason = f"sticky:{prev_route}"
+            train_ok = True
+    elif route_status == "at_lark" and prev_route:
+        route_key = prev_route
+        train_ok = True
+        reason = "at_lark_inherit"
+
     cur = conn.execute(
         """
         INSERT OR IGNORE INTO pings (
             recorded_at, shuttle_key, shuttle_name, uuid, vehicle_number,
             located_at, lat, lon, address, city, entity_state, speed,
-            bearing, compass, maps_url
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            bearing, compass, maps_url,
+            route_key, route_status, route_off_m, express_off_m, regular_off_m,
+            train_ok, label_reason
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             recorded_at,
-            summary["key"],
+            vehicle_key,
             summary.get("name"),
             summary.get("uuid"),
             summary.get("vehicle_number"),
@@ -362,10 +437,197 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
             summary.get("bearing"),
             summary.get("compass"),
             summary.get("maps_url"),
+            route_key,
+            route_status,
+            route_off_m,
+            lab.express_off_m,
+            lab.regular_off_m,
+            1 if train_ok else 0,
+            reason,
         ),
     )
     conn.commit()
     return cur.rowcount > 0
+
+
+def apply_route_labels(
+    conn: sqlite3.Connection,
+    *,
+    routes_path: Path | None = None,
+) -> dict[str, Any]:
+    """Backfill route_key / train_ok for every ping (vehicle identity unchanged)."""
+    from route_loop import ON_ROUTE_MAX_M
+
+    rows = list(
+        conn.execute(
+            "SELECT * FROM pings ORDER BY shuttle_key ASC, located_at ASC, id ASC"
+        )
+    )
+    pings = [dict(r) for r in rows]
+    labeled = label_all_pings(pings, routes_path=routes_path)
+    by_id = {r["id"]: r for r in labeled if r.get("id") is not None}
+
+    updated = 0
+    for row in rows:
+        lab = by_id.get(row["id"])
+        if not lab:
+            continue
+        conn.execute(
+            """
+            UPDATE pings SET
+                route_key = ?,
+                route_status = ?,
+                route_off_m = ?,
+                express_off_m = ?,
+                regular_off_m = ?,
+                train_ok = ?,
+                label_reason = ?
+            WHERE id = ?
+            """,
+            (
+                lab.get("route_key"),
+                lab.get("route_status"),
+                lab.get("route_off_m"),
+                lab.get("express_off_m"),
+                lab.get("regular_off_m"),
+                lab.get("train_ok", 0),
+                lab.get("reason"),
+                row["id"],
+            ),
+        )
+        updated += 1
+    conn.commit()
+
+    stats: dict[str, Any] = {
+        "updated": updated,
+        "by_status": {},
+        "by_route": {},
+        "train_ok": 0,
+        "train_ok_but_far": 0,
+    }
+    for lab in labeled:
+        st = lab.get("route_status") or "unknown"
+        stats["by_status"][st] = stats["by_status"].get(st, 0) + 1
+        rk = lab.get("route_key") or "(none)"
+        stats["by_route"][rk] = stats["by_route"].get(rk, 0) + 1
+        if lab.get("train_ok"):
+            stats["train_ok"] += 1
+            if lab.get("route_status") == "on_route" and (lab.get("route_off_m") or 0) > ON_ROUTE_MAX_M:
+                stats["train_ok_but_far"] += 1
+
+    cross: dict[str, dict[str, int]] = {}
+    for lab in labeled:
+        vk = lab.get("shuttle_key") or "?"
+        rk = lab.get("route_key") or "(none)"
+        cross.setdefault(vk, {})
+        cross[vk][rk] = cross[vk].get(rk, 0) + 1
+    stats["vehicle_vs_route"] = cross
+    return stats
+
+
+def export_history_payload(conn: sqlite3.Connection) -> dict[str, Any]:
+    rows = [
+        dict(r)
+        for r in conn.execute(
+            """
+            SELECT id, recorded_at, shuttle_key, shuttle_name, vehicle_number,
+                   located_at, lat, lon, address, city, entity_state, speed,
+                   bearing, compass,
+                   route_key, route_status, route_off_m,
+                   express_off_m, regular_off_m, train_ok, label_reason
+            FROM pings
+            ORDER BY located_at ASC, id ASC
+            """
+        )
+    ]
+    by_shuttle: dict[str, int] = {}
+    by_route: dict[str, int] = {}
+    train_rows = []
+    for r in rows:
+        by_shuttle[r["shuttle_key"]] = by_shuttle.get(r["shuttle_key"], 0) + 1
+        rk = r.get("route_key") or "(none)"
+        by_route[rk] = by_route.get(rk, 0) + 1
+        if r.get("train_ok"):
+            train_rows.append(r)
+    return {
+        "exported_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ping_count": len(rows),
+        "train_ok_count": len(train_rows),
+        "by_shuttle": by_shuttle,
+        "by_route": by_route,
+        "pings": rows,
+        "train_pings": train_rows,
+    }
+
+
+def cmd_label(args: argparse.Namespace) -> int:
+    """Backfill route labels on the history DB and write clean train exports."""
+    db_path = Path(args.db)
+    if not db_path.exists():
+        raise SystemExit(f"No history DB at {db_path}")
+
+    routes_path = Path(args.routes) if getattr(args, "routes", None) else DEFAULT_ROUTES
+    conn = connect_db(db_path)
+    stats = apply_route_labels(conn, routes_path=routes_path)
+    payload = export_history_payload(conn)
+    conn.close()
+
+    out_dir = Path(args.out_dir) if args.out_dir else (db_path.parent / "data")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    history_path = out_dir / "history.json"
+    train_path = out_dir / "train_pings.json"
+    history_path.write_text(
+        json.dumps({k: v for k, v in payload.items() if k != "train_pings"}, indent=2)
+    )
+    train_payload = {
+        "exported_at": payload["exported_at"],
+        "ping_count": payload["train_ok_count"],
+        "by_route": {},
+        "by_vehicle": {},
+        "notes": (
+            "train_ok pings only. shuttle_key = Motive vehicle; "
+            "route_key = passenger service loop used for ETA training."
+        ),
+        "pings": payload["train_pings"],
+    }
+    for p in payload["train_pings"]:
+        rk = p.get("route_key") or "(none)"
+        vk = p.get("shuttle_key") or "?"
+        train_payload["by_route"][rk] = train_payload["by_route"].get(rk, 0) + 1
+        train_payload["by_vehicle"][vk] = train_payload["by_vehicle"].get(vk, 0) + 1
+    train_path.write_text(json.dumps(train_payload, indent=2))
+
+    snap = out_dir / "shuttle_history.db"
+    if db_path.resolve() != snap.resolve():
+        import shutil
+
+        shutil.copy2(db_path, snap)
+
+    if args.json:
+        print(json.dumps(stats, indent=2))
+    else:
+        print(_format_label_report(stats))
+    print(f"Wrote {history_path} ({payload['ping_count']} pings)")
+    print(f"Wrote {train_path} ({payload['train_ok_count']} train_ok)")
+    return 0
+
+
+def _format_label_report(stats: dict[str, Any]) -> str:
+    lines = [
+        f"Labeled {stats['updated']} pings  ·  train_ok={stats['train_ok']}  ·  "
+        f"far-but-train_ok={stats.get('train_ok_but_far', 0)}",
+        "By status: "
+        + ", ".join(f"{k}={v}" for k, v in sorted(stats["by_status"].items())),
+        "By route_key: "
+        + ", ".join(f"{k}={v}" for k, v in sorted(stats["by_route"].items())),
+        "Vehicle → route_key:",
+    ]
+    for vk, routes in sorted(stats.get("vehicle_vs_route", {}).items()):
+        bits = ", ".join(f"{rk}={n}" for rk, n in sorted(routes.items()))
+        lines.append(f"  {vk}: {bits}")
+    return "\n".join(lines)
+
 
 
 def query_history(
@@ -911,6 +1173,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Export pings, snaps, and inferred loop legs as GeoJSON",
     )
 
+    p_label = sub.add_parser(
+        "label",
+        parents=[common],
+        help="Backfill route_key on history; export train_ok pings",
+    )
+    p_label.add_argument(
+        "--routes",
+        default=str(DEFAULT_ROUTES),
+        help=f"intended_routes.json (default: {DEFAULT_ROUTES})",
+    )
+    p_label.add_argument(
+        "--out-dir",
+        default="",
+        help="Export dir for history.json + train_pings.json (default: ./data)",
+    )
+    p_label.add_argument("--json", action="store_true", help="Print stats as JSON")
+
     sub.add_parser("discover", parents=[common], help="Print discovered endpoint + UUIDs")
 
     return parser
@@ -924,7 +1203,7 @@ def main(argv: list[str] | None = None) -> int:
     #   lark_shuttle.py express        -> now express
     #   lark_shuttle.py --json         -> now all --json
     #   lark_shuttle.py --discover-only -> discover
-    commands = {"now", "log", "history", "match", "discover"}
+    commands = {"now", "log", "history", "match", "label", "discover"}
     if argv and argv[0] in ("--discover-only",):
         argv = ["discover"]
     elif not argv or (argv[0] not in commands and not argv[0].startswith("-")):
@@ -943,6 +1222,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_history(args)
     if args.command == "match":
         return cmd_match(args)
+    if args.command == "label":
+        return cmd_label(args)
 
     # now / log / discover need Linktree + API
     try:

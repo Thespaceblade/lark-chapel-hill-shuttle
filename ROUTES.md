@@ -21,6 +21,10 @@ clearer fit (Express-on-Regular, both on home routes, etc.). Pin a vehicle with
 `"express": "regular"` or pass `match express --on-route regular` when you want
 a fixed mapping. Do **not** rewrite history keys.
 
+For training / clean exports, run `python3 lark_shuttle.py label`. That writes
+`route_key` on every ping and `data/train_pings.json` (`train_ok` only). An
+Express tracker ping that sits on the Regular loop is labeled `route_key=regular`.
+
 The web UI does the same live via GPS (`src/lib/service.ts` + `assignServices`).
 
 Preview: `kmz_routes_preview.html`

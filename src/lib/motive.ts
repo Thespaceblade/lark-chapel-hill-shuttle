@@ -103,11 +103,12 @@ export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
     const nxt = loop.nextStop(proj);
     if (nxt) {
       const mph = parseSpeedMph(speed);
+      const state = loc?.entity_state ?? null;
       nextStop = {
         key: nxt.key,
         name: nxt.name,
         alongM: Math.round(nxt.alongM),
-        etaMin: Math.round(etaMinutes(nxt.alongM, mph) * 10) / 10,
+        etaMin: Math.round(etaMinutes(nxt.alongM, mph, state) * 10) / 10,
       };
     }
   }

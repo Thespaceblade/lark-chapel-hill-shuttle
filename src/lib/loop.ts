@@ -245,12 +245,45 @@ export class RouteLoop {
   }
 }
 
+/**
+ * Campus-shuttle ETA from path distance.
+ *
+ * Motive only gives an instantaneous speed, so we:
+ * - ignore crawl/idle (≤1 mph) and use a typical cruise instead
+ * - clamp spikes (brief 25+ mph) so ETA doesn't collapse
+ * - blend live speed with typical cruise to damp noise
+ *
+ * Observed moving samples in route_pings.geojson ~ median 13 mph.
+ */
+export const ETA_TYPICAL_MPH = 13;
+export const ETA_MIN_MPH = 7;
+export const ETA_MAX_MPH = 18;
+
+export function effectiveSpeedMph(
+  speedMph: number | null,
+  state: string | null = null,
+): number {
+  const st = (state || "").toLowerCase();
+  const live =
+    speedMph != null && Number.isFinite(speedMph) ? speedMph : null;
+  const isMoving = st === "moving" || (st === "" && live != null && live > 1);
+
+  if (!isMoving || live == null || live <= 1) {
+    // Idling / off / unknown: assume they'll resume at typical cruise,
+    // not sit at 0 forever and not invent a random fallback mid-crawl.
+    return ETA_TYPICAL_MPH;
+  }
+
+  const clamped = Math.min(ETA_MAX_MPH, Math.max(ETA_MIN_MPH, live));
+  return 0.55 * clamped + 0.45 * ETA_TYPICAL_MPH;
+}
+
 export function etaMinutes(
   alongM: number,
   speedMph: number | null,
-  fallbackMph = 12,
+  state: string | null = null,
 ): number {
-  const mph = speedMph && speedMph > 1 ? speedMph : fallbackMph;
+  const mph = effectiveSpeedMph(speedMph, state);
   const mps = mph * 0.44704;
   return alongM / mps / 60;
 }

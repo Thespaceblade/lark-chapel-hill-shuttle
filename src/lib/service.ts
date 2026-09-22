@@ -1,6 +1,7 @@
-import type { ShuttleKey } from "./shuttles";
+import type { ShuttleKey, VehicleKey } from "./shuttles";
 import type { RouteLoop } from "./loop";
 import { LARK_STOP, distanceM, isAtLark } from "./schedule";
+import { homeServiceForVehicle, vehicleLabel } from "./roster";
 
 /** On-route if snapped within this many meters of a service loop. */
 export const ON_ROUTE_MAX_M = 90;
@@ -10,8 +11,6 @@ export const OFF_NETWORK_M = 160;
 
 /** Near Lark property but not at the curb pickup (parked behind / lot). */
 export const BEHIND_LARK_M = 220;
-
-export type VehicleHome = ShuttleKey;
 
 export type ServiceFit = {
   key: ShuttleKey;
@@ -26,7 +25,9 @@ export type VehicleServiceStatus =
   | "deadheading";
 
 export type InferredVehicle = {
-  homeKey: VehicleHome;
+  vehicleKey: VehicleKey;
+  /** Soft roster usual service (hint only — not identity). */
+  homeKey: ShuttleKey;
   inferredService: ShuttleKey | null;
   status: VehicleServiceStatus;
   statusReason: string | null;
@@ -35,19 +36,21 @@ export type InferredVehicle = {
 };
 
 export function classifyVehicle(args: {
-  homeKey: VehicleHome;
+  vehicleKey: VehicleKey;
   lat: number | null;
   lon: number | null;
   state: string | null;
   speedMph: number | null;
   loops: Record<ShuttleKey, RouteLoop>;
 }): InferredVehicle {
-  const { homeKey, lat, lon, state, speedMph, loops } = args;
+  const { vehicleKey, lat, lon, state, speedMph, loops } = args;
+  const homeKey = homeServiceForVehicle(vehicleKey);
   const st = (state || "").toLowerCase();
   const moving = st === "moving" && (speedMph == null || speedMph > 1);
 
   if (lat == null || lon == null) {
     return {
+      vehicleKey,
       homeKey,
       inferredService: null,
       status: "out_of_service",
@@ -84,9 +87,9 @@ export function classifyVehicle(args: {
     distLark <= BEHIND_LARK_M &&
     (st === "off" || st === "idling" || !moving);
 
-  // Parked behind Lark / lot — not boarding.
   if (behindLark) {
     return {
+      vehicleKey,
       homeKey,
       inferredService: null,
       status: "out_of_service",
@@ -96,13 +99,13 @@ export function classifyVehicle(args: {
     };
   }
 
-  // Clearly off both passenger loops (gas run, yard, random deadhead).
   if (
     !atLark &&
     fits.express.offLoopM > OFF_NETWORK_M &&
     fits.regular.offLoopM > OFF_NETWORK_M
   ) {
     return {
+      vehicleKey,
       homeKey,
       inferredService: null,
       status: moving ? "deadheading" : "out_of_service",
@@ -116,6 +119,7 @@ export function classifyVehicle(args: {
 
   if (st === "off" && !atLark && !onE && !onR) {
     return {
+      vehicleKey,
       homeKey,
       inferredService: null,
       status: "out_of_service",
@@ -129,18 +133,16 @@ export function classifyVehicle(args: {
   if (onE && !onR) inferred = "express";
   else if (onR && !onE) inferred = "regular";
   else if (onE && onR) {
-    // Shared corridor / near Lark geometry — pick closer, else home paint.
     const d = fits.express.offLoopM - fits.regular.offLoopM;
     if (Math.abs(d) < 20) inferred = homeKey;
     else inferred = d < 0 ? "express" : "regular";
   } else if (atLark) {
-    // At curb with ambiguous geometry: assume usual role until it commits
-    // to a loop after departure.
     inferred = homeKey;
   }
 
   if (!inferred) {
     return {
+      vehicleKey,
       homeKey,
       inferredService: null,
       status: moving ? "deadheading" : "out_of_service",
@@ -151,19 +153,17 @@ export function classifyVehicle(args: {
   }
 
   return {
+    vehicleKey,
     homeKey,
     inferredService: inferred,
     status: "in_service",
-    statusReason:
-      inferred !== homeKey
-        ? `Usually ${label(homeKey)} · running ${label(inferred)}`
-        : null,
+    statusReason: `${vehicleLabel(vehicleKey)} · running ${routeLabel(inferred)}`,
     fits,
     atLark,
   };
 }
 
-function label(key: ShuttleKey): string {
+function routeLabel(key: ShuttleKey): string {
   return key === "express" ? "Express" : "Regular";
 }
 
@@ -183,10 +183,6 @@ function fitLoop(
   };
 }
 
-/**
- * Pick at most one in-service vehicle per passenger service.
- * Closer-to-loop wins if two buses claim the same service.
- */
 export function assignServices(
   vehicles: InferredVehicle[],
 ): Record<ShuttleKey, InferredVehicle | null> {
@@ -206,24 +202,18 @@ export function assignServices(
     out[service] = candidates[0];
   }
 
-  // If both vehicles inferred the same service, the loser may still be a
-  // valid second service if it's reasonably near the other loop.
   for (const v of vehicles) {
     if (v.status !== "in_service" || !v.inferredService) continue;
     const taken = out[v.inferredService];
-    if (taken && taken.homeKey === v.homeKey) continue;
-    if (taken && taken.homeKey !== v.homeKey) {
-      // This vehicle lost the contested service — try the other loop.
+    if (taken && taken.vehicleKey === v.vehicleKey) continue;
+    if (taken && taken.vehicleKey !== v.vehicleKey) {
       const other: ShuttleKey =
         v.inferredService === "express" ? "regular" : "express";
       if (!out[other] && v.fits[other].offLoopM <= ON_ROUTE_MAX_M * 1.4) {
         out[other] = {
           ...v,
           inferredService: other,
-          statusReason:
-            v.homeKey !== other
-              ? `Usually ${label(v.homeKey)} · running ${label(other)}`
-              : null,
+          statusReason: `${vehicleLabel(v.vehicleKey)} · running ${routeLabel(other)}`,
         };
       }
     }

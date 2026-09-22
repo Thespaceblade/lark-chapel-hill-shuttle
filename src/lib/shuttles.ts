@@ -1,4 +1,11 @@
-export type ShuttleKey = "express" | "regular";
+/** Passenger service / route loop (board lines). Not a physical bus. */
+export type RouteKey = "express" | "regular";
+
+/** @deprecated Prefer RouteKey — board/service key. */
+export type ShuttleKey = RouteKey;
+
+/** Physical Motive tracker / bus number. */
+export type VehicleKey = "1" | "2";
 
 export type Stop = {
   key: string;
@@ -8,11 +15,17 @@ export type Stop = {
 };
 
 export type LiveShuttle = {
-  key: ShuttleKey;
+  /** Passenger service this board row represents. */
+  key: RouteKey;
   name: string;
   vehicleNumber: string | null;
-  /** Motive share this GPS comes from (usual Express/Regular paint). */
-  vehicleHome: ShuttleKey | null;
+  /** Which Motive vehicle (1/2) is providing this GPS. */
+  vehicleKey: VehicleKey | null;
+  /**
+   * Soft roster "usual" service for this vehicle (may differ from key).
+   * @deprecated Prefer vehicleKey + inferred route; kept for older UI copy.
+   */
+  vehicleHome: RouteKey | null;
   state: string | null;
   speed: string | null;
   address: string | null;
@@ -28,24 +41,13 @@ export type LiveShuttle = {
     alongM: number;
     etaMin: number | null;
   } | null;
-  /** True when GPS is inside the Lark curb geofence. */
   atLark: boolean;
-  /** True when GPS is near a published stop on this service (incl. Lark). */
   atStop: boolean;
-  /** False when parked/off-route/gas/diverted — not boarding this line. */
   rideable: boolean;
-  /**
-   * active = bus on this service;
-   * diverted = usual bus is covering the other line (still live-tracked);
-   * out_of_service = usual bus parked/fueling/off-network;
-   * no_bus = nothing to show.
-   */
   serviceStatus: "active" | "diverted" | "out_of_service" | "no_bus";
-  /** When diverted, which line the bus is actually running. */
-  divertedTo: ShuttleKey | null;
-  /** e.g. "Usually Express · running Regular" / parked reason */
+  divertedTo: RouteKey | null;
+  /** e.g. "Shuttle 1 · running Regular" */
   assignmentNote: string | null;
-  /** Clock schedule snapshot for Lark departures (Chapel Hill time). */
   larkSchedule: {
     headwayMin: number;
     nextSlotMin: number;
@@ -61,7 +63,9 @@ export type LiveShuttle = {
 
 /** Physical Motive vehicles (may run either passenger service). */
 export type FleetVehicle = {
-  homeKey: ShuttleKey;
+  vehicleKey: VehicleKey;
+  /** Soft roster usual service (hint only). */
+  homeKey: RouteKey;
   vehicleNumber: string | null;
   state: string | null;
   speed: string | null;
@@ -72,33 +76,45 @@ export type FleetVehicle = {
   locatedAt: string | null;
   atLark: boolean;
   rideable: boolean;
-  inferredService: ShuttleKey | null;
+  inferredService: RouteKey | null;
   status: "in_service" | "out_of_service" | "deadheading";
   statusReason: string | null;
   assignmentNote: string | null;
 };
 
+/** Board lines / route geometry — not Motive vehicles. */
 export const SHUTTLES: Record<
-  ShuttleKey,
-  { key: ShuttleKey; name: string; uuid: string; color: string; bullet: string }
+  RouteKey,
+  { key: RouteKey; name: string; color: string; bullet: string }
 > = {
-  // UUIDs are physical Motive shares (morning paint). After 2 PM ET the
-  // roster remaps home service — see src/lib/roster.ts.
   express: {
     key: "express",
     name: "Express",
-    // Shuttle 1 (Lark Chapel Hill 1) — Express until 2 PM, then Regular
-    uuid: "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
     color: "#0039a6",
     bullet: "E",
   },
   regular: {
     key: "regular",
     name: "Regular",
-    // Shuttle 2 (Lark Chapel Hill 2) — Regular until 2 PM, then Express
-    uuid: "2485bb70-a546-11f1-a663-320d2d4970d9",
     color: "#ff6319",
     bullet: "R",
+  },
+};
+
+/** Motive trackers. UUIDs are the live-share links for each physical bus. */
+export const VEHICLES: Record<
+  VehicleKey,
+  { key: VehicleKey; label: string; uuid: string }
+> = {
+  "1": {
+    key: "1",
+    label: "Shuttle 1",
+    uuid: "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+  },
+  "2": {
+    key: "2",
+    label: "Shuttle 2",
+    uuid: "2485bb70-a546-11f1-a663-320d2d4970d9",
   },
 };
 
@@ -107,14 +123,9 @@ export const MOTIVE = {
   userAgent: "lark-shuttle-web/0.1 (+vercel)",
 };
 
-/**
- * Public Motive web-share key (same value embedded in tracking.gomotive.com JS /
- * lark_shuttle.py FALLBACK). Env MOTIVE_WEB_SHARE_API_KEY overrides when set.
- */
 export const MOTIVE_PUBLIC_WEB_SHARE_API_KEY =
   "3gCAa2VxLV3nlJfk7EhzJUEe5lg3IU9b50sNyOfUSSE6Fg2ACZr6GK5KqpMW55rn";
 
-/** Strip paste mistakes (quotes/whitespace) from env values. */
 export function normalizeMotiveApiKey(raw?: string | null): string | undefined {
   const trimmed = raw?.trim();
   if (!trimmed) return undefined;
@@ -122,10 +133,11 @@ export function normalizeMotiveApiKey(raw?: string | null): string | undefined {
   return unquoted || undefined;
 }
 
-/** Server-only Motive share key — env override, else public share key. */
 export function getMotiveApiKey(): string {
   return (
     normalizeMotiveApiKey(process.env.MOTIVE_WEB_SHARE_API_KEY) ??
     MOTIVE_PUBLIC_WEB_SHARE_API_KEY
   );
 }
+
+export { vehicleLabel } from "./roster";

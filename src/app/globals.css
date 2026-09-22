@@ -24,6 +24,16 @@ body {
   color: var(--ink);
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* Leaflet attribution cramped on phones */
+.leaflet-control-attribution {
+  max-width: 55vw;
+  font-size: 9px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 a {

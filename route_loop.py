@@ -14,7 +14,31 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 DEFAULT_ROUTES = Path(__file__).resolve().parent / "intended_routes.json"
+DEFAULT_ASSIGNMENT = Path(__file__).resolve().parent / "data" / "route_assignment.json"
 EARTH_M = 6_371_000.0
+
+
+def load_route_assignment(path: Path | None = None) -> dict[str, str]:
+    """vehicle_key → route geometry key (e.g. express → regular)."""
+    path = path or DEFAULT_ASSIGNMENT
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text())
+    mapping = data.get("vehicle_to_route") or {}
+    return {str(k): str(v) for k, v in mapping.items()}
+
+
+def resolve_route_key(
+    vehicle_key: str,
+    *,
+    on_route: str | None = None,
+    assignment_path: Path | None = None,
+) -> str:
+    """Which intended_routes geometry to use for this Motive vehicle."""
+    if on_route:
+        return on_route
+    mapping = load_route_assignment(assignment_path)
+    return mapping.get(vehicle_key, vehicle_key)
 
 
 def haversine_m(a: Sequence[float], b: Sequence[float]) -> float:

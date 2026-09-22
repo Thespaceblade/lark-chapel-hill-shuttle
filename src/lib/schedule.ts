@@ -60,6 +60,11 @@ function chapelHillClock(date: Date): {
   };
 }
 
+/** Whole minutes since local midnight in America/New_York. */
+export function chapelHillMinutesOfDay(date: Date = new Date()): number {
+  return chapelHillClock(date).minutes;
+}
+
 export function formatSlotLabel(slotMinute: number): string {
   const normalized = ((slotMinute % (24 * 60)) + 24 * 60) % (24 * 60);
   const h = Math.floor(normalized / 60);

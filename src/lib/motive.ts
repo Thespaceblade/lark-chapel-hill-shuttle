@@ -13,6 +13,7 @@ import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
 import { isAtLark, larkScheduleSnapshot, distanceM, AT_STOP_RADIUS_M } from "./schedule";
 import { assignServices, classifyVehicle } from "./service";
+import { homeServiceForVehicle, vehicleIdFromShareSlot } from "./roster";
 
 type MotivePayload = {
   live_share?: {
@@ -91,8 +92,10 @@ async function fetchMotive(uuid: string): Promise<MotivePayload> {
   return (await res.json()) as MotivePayload;
 }
 
-async function fetchRawVehicle(homeKey: ShuttleKey): Promise<RawVehicle> {
-  const meta = SHUTTLES[homeKey];
+async function fetchRawVehicle(shareSlot: ShuttleKey): Promise<RawVehicle> {
+  // shareSlot selects the Motive UUID (morning paint). homeKey follows the
+  // daily roster (Shuttle 1 → Regular from 2 PM ET).
+  const meta = SHUTTLES[shareSlot];
   const payload = await fetchMotive(meta.uuid);
   const vehicle = payload.live_share?.vehicle;
   const loc = vehicle?.vehicle_location;
@@ -102,6 +105,7 @@ async function fetchRawVehicle(homeKey: ShuttleKey): Promise<RawVehicle> {
       : typeof loc.speed === "number"
         ? `${loc.speed} mph`
         : String(loc.speed);
+  const homeKey = homeServiceForVehicle(vehicleIdFromShareSlot(shareSlot));
   return {
     homeKey,
     vehicleNumber: vehicle?.number ?? null,

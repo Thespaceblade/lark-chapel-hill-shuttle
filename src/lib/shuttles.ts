@@ -11,6 +11,8 @@ export type LiveShuttle = {
   key: ShuttleKey;
   name: string;
   vehicleNumber: string | null;
+  /** Motive share this GPS comes from (usual Express/Regular paint). */
+  vehicleHome: ShuttleKey | null;
   state: string | null;
   speed: string | null;
   address: string | null;
@@ -28,6 +30,12 @@ export type LiveShuttle = {
   } | null;
   /** True when GPS is inside the Lark curb geofence. */
   atLark: boolean;
+  /** False when parked/off-route/gas — not boarding. */
+  rideable: boolean;
+  /** active = bus on this service; no_bus = nothing assigned right now. */
+  serviceStatus: "active" | "no_bus";
+  /** e.g. "Usually Express · running Regular" */
+  assignmentNote: string | null;
   /** Clock schedule snapshot for Lark departures (Chapel Hill time). */
   larkSchedule: {
     headwayMin: number;
@@ -40,6 +48,25 @@ export type LiveShuttle = {
   } | null;
   loopFrac: number | null;
   offLoopM: number | null;
+};
+
+/** Physical Motive vehicles (may run either passenger service). */
+export type FleetVehicle = {
+  homeKey: ShuttleKey;
+  vehicleNumber: string | null;
+  state: string | null;
+  speed: string | null;
+  address: string | null;
+  lat: number | null;
+  lon: number | null;
+  bearing: number | null;
+  locatedAt: string | null;
+  atLark: boolean;
+  rideable: boolean;
+  inferredService: ShuttleKey | null;
+  status: "in_service" | "out_of_service" | "deadheading";
+  statusReason: string | null;
+  assignmentNote: string | null;
 };
 
 export const SHUTTLES: Record<

@@ -185,6 +185,16 @@ export default function HomePage() {
   const [, setHoldEpoch] = useState(0);
 
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 720px)");
+    const sync = () => {
+      if (mq.matches) setFocus("both");
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     fetch("/api/routes")
       .then((r) => r.json())

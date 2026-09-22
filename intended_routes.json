@@ -969,6 +969,12 @@
         "lon": -79.04623
       },
       {
+        "key": "hsl",
+        "name": "Health Sciences Library",
+        "lat": 35.90558,
+        "lon": -79.05337
+      },
+      {
         "key": "sitterson",
         "name": "Sitterson",
         "lat": 35.90995,

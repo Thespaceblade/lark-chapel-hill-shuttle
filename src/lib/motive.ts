@@ -52,12 +52,10 @@ type RawVehicle = {
 };
 
 function getLoop(key: ShuttleKey): RouteLoop {
-  const route = (
-    routesData as unknown as Record<
-      string,
-      { line: [number, number][]; stops: Stop[] }
-    >
-  )[key];
+  const route = routesData[key] as {
+    line: [number, number][];
+    stops: Stop[];
+  };
   return new RouteLoop(key, route.line, route.stops, true);
 }
 

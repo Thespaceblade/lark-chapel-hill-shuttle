@@ -11,6 +11,17 @@ Lark → Memorial Hall (with campus loop as drawn in My Maps) → Lark
 ## Regular
 Lark → Memorial Hall → Student Union → Business school → Sitterson → Lark
 
+## Daily vehicle roster (America/New_York)
+
+| Time | Shuttle 1 (Lark Chapel Hill 1) | Shuttle 2 (Lark Chapel Hill 2) |
+|------|--------------------------------|--------------------------------|
+| Before 2:00 PM | Express | Regular |
+| From 2:00 PM | Regular | Express |
+
+Physical Motive share UUIDs and history `shuttle_key` values stay fixed
+(morning paint: Shuttle 1 → `express`, Shuttle 2 → `regular`). Only the
+**usual home service** for live UI notes remaps (`src/lib/roster.ts`).
+
 ## Vehicle → route assignment
 
 Motive trackers keep a stable `shuttle_key` (`express` / `regular`) in history.
@@ -25,7 +36,8 @@ For training / clean exports, run `python3 lark_shuttle.py label`. That writes
 `route_key` on every ping and `data/train_pings.json` (`train_ok` only). An
 Express tracker ping that sits on the Regular loop is labeled `route_key=regular`.
 
-The web UI does the same live via GPS (`src/lib/service.ts` + `assignServices`).
+The web UI does the same live via GPS (`src/lib/service.ts` + `assignServices`),
+and uses the daily roster above for “usual home” paint after 2:00 PM.
 
 Preview: `kmz_routes_preview.html`
 Machine-readable: `intended_routes.json` (and `data/intended_routes.json` if present)

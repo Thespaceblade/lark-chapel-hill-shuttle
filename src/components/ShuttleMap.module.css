@@ -16,8 +16,8 @@
 }
 
 .busIconWrap {
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
   overflow: visible !important;
 }
 
@@ -28,32 +28,35 @@
   overflow: visible;
 }
 
-.busArrowRing {
+/* Nested :global — Leaflet HTML uses plain class names inside the hashed wrap. */
+.busMarker :global(.lark-bus-arrow-ring) {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: start center;
   pointer-events: none;
-  transition: transform 0.9s ease-out, opacity 0.25s ease;
+  transition: transform 0.35s ease-out, opacity 0.2s ease;
   overflow: visible;
   will-change: transform;
+  opacity: 1;
+  z-index: 0;
 }
 
-.busArrow {
+.busMarker :global(.lark-bus-arrow) {
   width: 0;
   height: 0;
-  margin-top: -4px;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 18px solid #fff;
-  filter: drop-shadow(0 0 1px #000) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+  margin-top: -6px;
+  border-left: 11px solid transparent;
+  border-right: 11px solid transparent;
+  border-bottom: 20px solid #fff;
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.75));
 }
 
-.busArrow[data-line="express"] {
+.busMarker :global(.lark-bus-arrow[data-line="express"]) {
   border-bottom-color: #93c5fd;
 }
 
-.busArrow[data-line="regular"] {
+.busMarker :global(.lark-bus-arrow[data-line="regular"]) {
   border-bottom-color: #fdba74;
 }
 
@@ -93,10 +96,10 @@
     font-size: 0.9rem;
   }
 
-  .busArrow {
-    border-left-width: 9px;
-    border-right-width: 9px;
-    border-bottom-width: 16px;
-    margin-top: -3px;
+  .busMarker :global(.lark-bus-arrow) {
+    border-left-width: 10px;
+    border-right-width: 10px;
+    border-bottom-width: 18px;
+    margin-top: -5px;
   }
 }

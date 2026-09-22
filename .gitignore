@@ -1,0 +1,11 @@
+# Runtime / local
+shuttle_history.db
+__pycache__/
+*.pyc
+.DS_Store
+.env
+
+# Large generated map screenshots (HTML maps are enough)
+*.png
+*_map.jpg
+route_map_preview.jpg

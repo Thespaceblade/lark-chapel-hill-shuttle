@@ -1,0 +1,851 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.0441965,
+          35.90131735
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:41:01Z",
+        "entity_state": "moving",
+        "speed": "5 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04424616,
+          35.9028023
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:41:31Z",
+        "entity_state": "moving",
+        "speed": "18 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.0443247,
+          35.9034513
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:42:00Z",
+        "entity_state": "moving",
+        "speed": "6 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04563438,
+          35.90385442
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:42:20Z",
+        "entity_state": "moving",
+        "speed": "22 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04623111,
+          35.9037462
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:42:26Z",
+        "entity_state": "moving",
+        "speed": "21 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05207725,
+          35.90363251
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:43:45Z",
+        "entity_state": "moving",
+        "speed": "22 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05420751,
+          35.90444242
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:44:46Z",
+        "entity_state": "moving",
+        "speed": "11 mph",
+        "address": "Manning Dr, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05332281,
+          35.90556235
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:45:39Z",
+        "entity_state": "moving",
+        "speed": "0 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05284364,
+          35.90704813
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:46:45Z",
+        "entity_state": "moving",
+        "speed": "5 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05283831,
+          35.90827665
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:47:45Z",
+        "entity_state": "moving",
+        "speed": "13 mph",
+        "address": "304 S Columbia St, Chapel Hill, NC 27516",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05367495,
+          35.90990189
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:48:43Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "203 S Columbia St, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05379771,
+          35.91008496
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:49:39Z",
+        "entity_state": "moving",
+        "speed": "6 mph",
+        "address": "201 S Columbia St, Chapel Hill, NC 27599-3175",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05503108,
+          35.91194184
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:50:37Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "S Columbia St, Chapel Hill, NC 27599-3175",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05529979,
+          35.91240202
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:51:46Z",
+        "entity_state": "moving",
+        "speed": "4 mph",
+        "address": "101 S Columbia St, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05540354,
+          35.9125758
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:52:00Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "101 S Columbia St, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05566041,
+          35.91304822
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:53:45Z",
+        "entity_state": "moving",
+        "speed": "11 mph",
+        "address": "100 S Columbia St, Chapel Hill, NC 27516",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05657042,
+          35.91708514
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:54:37Z",
+        "entity_state": "moving",
+        "speed": "28 mph",
+        "address": "408 Martin Luther King Junior Blvd, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349504,
+          35.91912447
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:55:44Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.053494,
+          35.91912368
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:56:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349393,
+          35.91912314
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:57:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349347,
+          35.91912289
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:58:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349177,
+          35.91912343
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T19:59:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349121,
+          35.91912322
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:00:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.0534914,
+          35.91912268
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:01:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349077,
+          35.91912199
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:02:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349048,
+          35.91912168
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:03:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05349023,
+          35.91912134
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:04:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05348967,
+          35.91912048
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:06:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05348947,
+          35.9191202
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:07:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.0534896,
+          35.91911982
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:08:40Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04524806,
+          35.90750126
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:21:46Z",
+        "entity_state": "moving",
+        "speed": "8 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04457952,
+          35.90638313
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:22:46Z",
+        "entity_state": "moving",
+        "speed": "8 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04436484,
+          35.90386078
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:23:45Z",
+        "entity_state": "moving",
+        "speed": "1 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04434125,
+          35.90270096
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:24:42Z",
+        "entity_state": "moving",
+        "speed": "20 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04612695,
+          35.90089113
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:25:47Z",
+        "entity_state": "moving",
+        "speed": null,
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04412762,
+          35.90131793
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:26:46Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04430698,
+          35.90348598
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:27:32Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.04589415,
+          35.90383297
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:28:44Z",
+        "entity_state": "moving",
+        "speed": "22 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05020024,
+          35.9030579
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:29:31Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05437425,
+          35.90455378
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:30:48Z",
+        "entity_state": "moving",
+        "speed": "9 mph",
+        "address": "Manning Dr, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05296621,
+          35.90640289
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:31:38Z",
+        "entity_state": "moving",
+        "speed": "18 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05279529,
+          35.90806736
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:32:48Z",
+        "entity_state": "moving",
+        "speed": "13 mph",
+        "address": "Evergreen Ln, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05306613,
+          35.90889706
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:33:15Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "S Columbia St, Chapel Hill, NC 27516",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05366336,
+          35.90988941
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:34:30Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "203 S Columbia St, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05416446,
+          35.91064821
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:36:29Z",
+        "entity_state": "idling",
+        "speed": "0 mph",
+        "address": "201 S Columbia St, Chapel Hill, NC 27599-3175",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05528888,
+          35.91239498
+        ]
+      },
+      "properties": {
+        "shuttle_key": "express",
+        "located_at": "2026-09-18T20:38:47Z",
+        "entity_state": "moving",
+        "speed": "22 mph",
+        "address": "101 S Columbia St, Chapel Hill, NC 27514",
+        "long_dwell": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.05224924,
+          35.91806314
+        ]
+      },
+      "properties": {
+        "shuttle_key": "regular",
+        "located_at": "2026-09-18T19:17:24Z",
+        "entity_state": "off",
+        "speed": null,
+        "address": "Central Park Ln, Chapel Hill, NC 27515",
+        "long_dwell": false
+      }
+    }
+  ]
+}

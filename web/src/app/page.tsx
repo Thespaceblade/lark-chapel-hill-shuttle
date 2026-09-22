@@ -24,7 +24,7 @@ type RoutesResponse = {
 
 type Stop = { key: string; name: string; lat: number; lon: number };
 
-const POLL_MS = 10_000;
+const POLL_MS = 1_000;
 
 function ageLabel(iso: string | null): string {
   if (!iso) return "—";
@@ -163,7 +163,7 @@ export default function HomePage() {
 
         {error ? <p className={styles.error}>{error}</p> : null}
         <p className={styles.footer}>
-          Refreshes every 10s · Motive live share
+          Refreshes every 1s · Motive live share
           {live?.fetchedAt ? ` · fetched ${ageLabel(live.fetchedAt)}` : ""}
         </p>
       </aside>

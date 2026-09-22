@@ -18,7 +18,7 @@ Deploy:
 2. Set **Root Directory** to `web`
 3. Framework: Next.js (auto) · Deploy
 
-The site polls `/api/live` every 10s (server → Motive), draws intended loops, and
+The site polls `/api/live` every 1s (server → Motive), draws intended loops, and
 shows a crude next-stop ETA from loop distance ÷ speed.
 
 ## Python CLI

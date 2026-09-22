@@ -1,0 +1,2680 @@
+{
+  "generated_at": "2026-09-18T21:32:42Z",
+  "key": "express",
+  "vehicle_check": [
+    "Lark Chapel Hill 1"
+  ],
+  "uuid_check": [
+    "0c5a01f2-a549-11f1-83ea-4247aa532d4a"
+  ],
+  "intended": {
+    "waypoints": [
+      "lark",
+      "memorial",
+      "e_cameron",
+      "mlk_north",
+      "lark"
+    ],
+    "stops": [
+      {
+        "key": "lark",
+        "name": "Lark Chapel Hill",
+        "lat": 35.919,
+        "lon": -79.05419
+      },
+      {
+        "key": "memorial",
+        "name": "Memorial Hall",
+        "lat": 35.9111,
+        "lon": -79.05198
+      }
+    ],
+    "line": [
+      [
+        35.919,
+        -79.054189
+      ],
+      [
+        35.919085,
+        -79.054238
+      ],
+      [
+        35.919141,
+        -79.054238
+      ],
+      [
+        35.91918,
+        -79.054238
+      ],
+      [
+        35.919184,
+        -79.054344
+      ],
+      [
+        35.919215,
+        -79.054662
+      ],
+      [
+        35.919223,
+        -79.054736
+      ],
+      [
+        35.919226,
+        -79.05495
+      ],
+      [
+        35.919218,
+        -79.055191
+      ],
+      [
+        35.91921,
+        -79.055305
+      ],
+      [
+        35.919196,
+        -79.05543
+      ],
+      [
+        35.919186,
+        -79.055496
+      ],
+      [
+        35.919155,
+        -79.055702
+      ],
+      [
+        35.919012,
+        -79.056075
+      ],
+      [
+        35.919007,
+        -79.056173
+      ],
+      [
+        35.919001,
+        -79.056292
+      ],
+      [
+        35.91888,
+        -79.056315
+      ],
+      [
+        35.918772,
+        -79.056335
+      ],
+      [
+        35.918621,
+        -79.056363
+      ],
+      [
+        35.91855,
+        -79.056376
+      ],
+      [
+        35.918409,
+        -79.056402
+      ],
+      [
+        35.918188,
+        -79.056443
+      ],
+      [
+        35.917703,
+        -79.056533
+      ],
+      [
+        35.917178,
+        -79.056626
+      ],
+      [
+        35.917086,
+        -79.05664
+      ],
+      [
+        35.916896,
+        -79.056676
+      ],
+      [
+        35.916605,
+        -79.056729
+      ],
+      [
+        35.916492,
+        -79.056807
+      ],
+      [
+        35.916344,
+        -79.056835
+      ],
+      [
+        35.916279,
+        -79.056846
+      ],
+      [
+        35.916231,
+        -79.056854
+      ],
+      [
+        35.916097,
+        -79.056821
+      ],
+      [
+        35.915845,
+        -79.056863
+      ],
+      [
+        35.915791,
+        -79.056873
+      ],
+      [
+        35.915461,
+        -79.056938
+      ],
+      [
+        35.915396,
+        -79.056947
+      ],
+      [
+        35.915331,
+        -79.056948
+      ],
+      [
+        35.915279,
+        -79.056943
+      ],
+      [
+        35.915253,
+        -79.056939
+      ],
+      [
+        35.915184,
+        -79.056922
+      ],
+      [
+        35.915115,
+        -79.056897
+      ],
+      [
+        35.915062,
+        -79.056868
+      ],
+      [
+        35.915018,
+        -79.056844
+      ],
+      [
+        35.914902,
+        -79.05678
+      ],
+      [
+        35.914863,
+        -79.056758
+      ],
+      [
+        35.914685,
+        -79.056655
+      ],
+      [
+        35.914673,
+        -79.056649
+      ],
+      [
+        35.914516,
+        -79.056558
+      ],
+      [
+        35.914403,
+        -79.056495
+      ],
+      [
+        35.914334,
+        -79.056456
+      ],
+      [
+        35.914139,
+        -79.056347
+      ],
+      [
+        35.914065,
+        -79.056306
+      ],
+      [
+        35.91401,
+        -79.056275
+      ],
+      [
+        35.913626,
+        -79.056056
+      ],
+      [
+        35.913492,
+        -79.055978
+      ],
+      [
+        35.913257,
+        -79.055846
+      ],
+      [
+        35.913146,
+        -79.055784
+      ],
+      [
+        35.913035,
+        -79.055718
+      ],
+      [
+        35.912663,
+        -79.055502
+      ],
+      [
+        35.912619,
+        -79.055478
+      ],
+      [
+        35.912334,
+        -79.055311
+      ],
+      [
+        35.911899,
+        -79.055058
+      ],
+      [
+        35.911859,
+        -79.055035
+      ],
+      [
+        35.911766,
+        -79.054983
+      ],
+      [
+        35.91151,
+        -79.054832
+      ],
+      [
+        35.911333,
+        -79.054729
+      ],
+      [
+        35.911083,
+        -79.054584
+      ],
+      [
+        35.910837,
+        -79.054437
+      ],
+      [
+        35.91079,
+        -79.054406
+      ],
+      [
+        35.910713,
+        -79.054346
+      ],
+      [
+        35.910768,
+        -79.0542
+      ],
+      [
+        35.910873,
+        -79.053925
+      ],
+      [
+        35.911039,
+        -79.053481
+      ],
+      [
+        35.911128,
+        -79.053248
+      ],
+      [
+        35.911171,
+        -79.053133
+      ],
+      [
+        35.911233,
+        -79.052969
+      ],
+      [
+        35.911506,
+        -79.052243
+      ],
+      [
+        35.911593,
+        -79.052019
+      ],
+      [
+        35.911631,
+        -79.051918
+      ],
+      [
+        35.911578,
+        -79.051894
+      ],
+      [
+        35.911562,
+        -79.051886
+      ],
+      [
+        35.91105,
+        -79.05157
+      ],
+      [
+        35.91113,
+        -79.05135
+      ],
+      [
+        35.91105,
+        -79.05157
+      ],
+      [
+        35.911223,
+        -79.051677
+      ],
+      [
+        35.911562,
+        -79.051886
+      ],
+      [
+        35.911578,
+        -79.051894
+      ],
+      [
+        35.911631,
+        -79.051918
+      ],
+      [
+        35.911689,
+        -79.051765
+      ],
+      [
+        35.911721,
+        -79.05168
+      ],
+      [
+        35.911774,
+        -79.05154
+      ],
+      [
+        35.912046,
+        -79.050835
+      ],
+      [
+        35.91207,
+        -79.050774
+      ],
+      [
+        35.912135,
+        -79.050602
+      ],
+      [
+        35.912153,
+        -79.050554
+      ],
+      [
+        35.912197,
+        -79.050437
+      ],
+      [
+        35.912257,
+        -79.050282
+      ],
+      [
+        35.91219,
+        -79.050241
+      ],
+      [
+        35.912141,
+        -79.050214
+      ],
+      [
+        35.91207,
+        -79.050176
+      ],
+      [
+        35.911899,
+        -79.050078
+      ],
+      [
+        35.911882,
+        -79.050065
+      ],
+      [
+        35.911874,
+        -79.050044
+      ],
+      [
+        35.911871,
+        -79.049996
+      ],
+      [
+        35.911879,
+        -79.049955
+      ],
+      [
+        35.911908,
+        -79.049877
+      ],
+      [
+        35.911937,
+        -79.0498
+      ],
+      [
+        35.91196,
+        -79.049764
+      ],
+      [
+        35.911985,
+        -79.049746
+      ],
+      [
+        35.911999,
+        -79.049745
+      ],
+      [
+        35.912192,
+        -79.049859
+      ],
+      [
+        35.912225,
+        -79.049908
+      ],
+      [
+        35.912234,
+        -79.04993
+      ],
+      [
+        35.912234,
+        -79.04995
+      ],
+      [
+        35.91223,
+        -79.049982
+      ],
+      [
+        35.912164,
+        -79.050154
+      ],
+      [
+        35.912141,
+        -79.050214
+      ],
+      [
+        35.91219,
+        -79.050241
+      ],
+      [
+        35.912257,
+        -79.050282
+      ],
+      [
+        35.912197,
+        -79.050437
+      ],
+      [
+        35.912153,
+        -79.050554
+      ],
+      [
+        35.912135,
+        -79.050602
+      ],
+      [
+        35.91207,
+        -79.050774
+      ],
+      [
+        35.912046,
+        -79.050835
+      ],
+      [
+        35.911774,
+        -79.05154
+      ],
+      [
+        35.911721,
+        -79.05168
+      ],
+      [
+        35.911689,
+        -79.051765
+      ],
+      [
+        35.911631,
+        -79.051918
+      ],
+      [
+        35.911593,
+        -79.052019
+      ],
+      [
+        35.911506,
+        -79.052243
+      ],
+      [
+        35.911233,
+        -79.052969
+      ],
+      [
+        35.911171,
+        -79.053133
+      ],
+      [
+        35.911128,
+        -79.053248
+      ],
+      [
+        35.911039,
+        -79.053481
+      ],
+      [
+        35.910873,
+        -79.053925
+      ],
+      [
+        35.910768,
+        -79.0542
+      ],
+      [
+        35.910713,
+        -79.054346
+      ],
+      [
+        35.91079,
+        -79.054406
+      ],
+      [
+        35.910837,
+        -79.054437
+      ],
+      [
+        35.911083,
+        -79.054584
+      ],
+      [
+        35.911333,
+        -79.054729
+      ],
+      [
+        35.91151,
+        -79.054832
+      ],
+      [
+        35.911766,
+        -79.054983
+      ],
+      [
+        35.911859,
+        -79.055035
+      ],
+      [
+        35.911899,
+        -79.055058
+      ],
+      [
+        35.912334,
+        -79.055311
+      ],
+      [
+        35.912619,
+        -79.055478
+      ],
+      [
+        35.912663,
+        -79.055502
+      ],
+      [
+        35.913035,
+        -79.055718
+      ],
+      [
+        35.913146,
+        -79.055784
+      ],
+      [
+        35.913257,
+        -79.055846
+      ],
+      [
+        35.913492,
+        -79.055978
+      ],
+      [
+        35.913626,
+        -79.056056
+      ],
+      [
+        35.91401,
+        -79.056275
+      ],
+      [
+        35.914065,
+        -79.056306
+      ],
+      [
+        35.914139,
+        -79.056347
+      ],
+      [
+        35.914334,
+        -79.056456
+      ],
+      [
+        35.914403,
+        -79.056495
+      ],
+      [
+        35.914516,
+        -79.056558
+      ],
+      [
+        35.914673,
+        -79.056649
+      ],
+      [
+        35.914685,
+        -79.056655
+      ],
+      [
+        35.914863,
+        -79.056758
+      ],
+      [
+        35.914902,
+        -79.05678
+      ],
+      [
+        35.915018,
+        -79.056844
+      ],
+      [
+        35.915062,
+        -79.056868
+      ],
+      [
+        35.915115,
+        -79.056897
+      ],
+      [
+        35.915184,
+        -79.056922
+      ],
+      [
+        35.915253,
+        -79.056939
+      ],
+      [
+        35.915279,
+        -79.056943
+      ],
+      [
+        35.915331,
+        -79.056948
+      ],
+      [
+        35.915396,
+        -79.056947
+      ],
+      [
+        35.915461,
+        -79.056938
+      ],
+      [
+        35.915791,
+        -79.056873
+      ],
+      [
+        35.915845,
+        -79.056863
+      ],
+      [
+        35.916097,
+        -79.056821
+      ],
+      [
+        35.916217,
+        -79.056739
+      ],
+      [
+        35.916328,
+        -79.056718
+      ],
+      [
+        35.916418,
+        -79.056702
+      ],
+      [
+        35.91641,
+        -79.056639
+      ],
+      [
+        35.916407,
+        -79.056601
+      ],
+      [
+        35.916422,
+        -79.056475
+      ],
+      [
+        35.916441,
+        -79.05633
+      ],
+      [
+        35.916446,
+        -79.056287
+      ],
+      [
+        35.916453,
+        -79.056244
+      ],
+      [
+        35.916484,
+        -79.056193
+      ],
+      [
+        35.916538,
+        -79.056167
+      ],
+      [
+        35.916578,
+        -79.056153
+      ],
+      [
+        35.916882,
+        -79.056051
+      ],
+      [
+        35.916896,
+        -79.056215
+      ],
+      [
+        35.916907,
+        -79.056327
+      ],
+      [
+        35.916908,
+        -79.056412
+      ],
+      [
+        35.916908,
+        -79.056484
+      ],
+      [
+        35.916904,
+        -79.056553
+      ],
+      [
+        35.916896,
+        -79.056676
+      ],
+      [
+        35.917086,
+        -79.05664
+      ],
+      [
+        35.917178,
+        -79.056626
+      ],
+      [
+        35.917703,
+        -79.056533
+      ],
+      [
+        35.918188,
+        -79.056443
+      ],
+      [
+        35.918409,
+        -79.056402
+      ],
+      [
+        35.91855,
+        -79.056376
+      ],
+      [
+        35.918621,
+        -79.056363
+      ],
+      [
+        35.918772,
+        -79.056335
+      ],
+      [
+        35.91888,
+        -79.056315
+      ],
+      [
+        35.919001,
+        -79.056292
+      ],
+      [
+        35.919007,
+        -79.056173
+      ],
+      [
+        35.919012,
+        -79.056075
+      ],
+      [
+        35.919155,
+        -79.055702
+      ],
+      [
+        35.919186,
+        -79.055496
+      ],
+      [
+        35.919196,
+        -79.05543
+      ],
+      [
+        35.91921,
+        -79.055305
+      ],
+      [
+        35.919218,
+        -79.055191
+      ],
+      [
+        35.919226,
+        -79.05495
+      ],
+      [
+        35.919223,
+        -79.054736
+      ],
+      [
+        35.919215,
+        -79.054662
+      ],
+      [
+        35.919184,
+        -79.054344
+      ],
+      [
+        35.91918,
+        -79.054238
+      ],
+      [
+        35.919141,
+        -79.054238
+      ],
+      [
+        35.919085,
+        -79.054238
+      ],
+      [
+        35.919,
+        -79.054189
+      ]
+    ],
+    "distance_m": 3625,
+    "source": "osrm"
+  },
+  "pings": [
+    {
+      "id": 1,
+      "recorded_at": "2026-09-18T19:41:03Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:41:01Z",
+      "lat": 35.90131735,
+      "lon": -79.0441965,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "5 mph",
+      "bearing": 86.6,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90131735,-79.0441965"
+    },
+    {
+      "id": 3,
+      "recorded_at": "2026-09-18T19:41:33Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:41:31Z",
+      "lat": 35.9028023,
+      "lon": -79.04424616,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "18 mph",
+      "bearing": 5.8,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9028023,-79.04424616"
+    },
+    {
+      "id": 5,
+      "recorded_at": "2026-09-18T19:42:04Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:42:00Z",
+      "lat": 35.9034513,
+      "lon": -79.0443247,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "6 mph",
+      "bearing": 359.1,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9034513,-79.0443247"
+    },
+    {
+      "id": 7,
+      "recorded_at": "2026-09-18T19:42:22Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:42:20Z",
+      "lat": 35.90385442,
+      "lon": -79.04563438,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "22 mph",
+      "bearing": 260.1,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90385442,-79.04563438"
+    },
+    {
+      "id": 9,
+      "recorded_at": "2026-09-18T19:42:29Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:42:26Z",
+      "lat": 35.9037462,
+      "lon": -79.04623111,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "21 mph",
+      "bearing": 249.1,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9037462,-79.04623111"
+    },
+    {
+      "id": 13,
+      "recorded_at": "2026-09-18T19:43:46Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:43:45Z",
+      "lat": 35.90363251,
+      "lon": -79.05207725,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "22 mph",
+      "bearing": 291.5,
+      "compass": "S",
+      "maps_url": "https://www.google.com/maps?q=35.90363251,-79.05207725"
+    },
+    {
+      "id": 15,
+      "recorded_at": "2026-09-18T19:44:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:44:46Z",
+      "lat": 35.90444242,
+      "lon": -79.05420751,
+      "address": "Manning Dr, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "11 mph",
+      "bearing": 311.8,
+      "compass": "S",
+      "maps_url": "https://www.google.com/maps?q=35.90444242,-79.05420751"
+    },
+    {
+      "id": 17,
+      "recorded_at": "2026-09-18T19:45:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:45:39Z",
+      "lat": 35.90556235,
+      "lon": -79.05332281,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "S",
+      "maps_url": "https://www.google.com/maps?q=35.90556235,-79.05332281"
+    },
+    {
+      "id": 19,
+      "recorded_at": "2026-09-18T19:46:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:46:45Z",
+      "lat": 35.90704813,
+      "lon": -79.05284364,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "5 mph",
+      "bearing": 7.8,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90704813,-79.05284364"
+    },
+    {
+      "id": 21,
+      "recorded_at": "2026-09-18T19:47:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:47:45Z",
+      "lat": 35.90827665,
+      "lon": -79.05283831,
+      "address": "304 S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "13 mph",
+      "bearing": 350.9,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90827665,-79.05283831"
+    },
+    {
+      "id": 23,
+      "recorded_at": "2026-09-18T19:48:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:48:43Z",
+      "lat": 35.90990189,
+      "lon": -79.05367495,
+      "address": "203 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90990189,-79.05367495"
+    },
+    {
+      "id": 25,
+      "recorded_at": "2026-09-18T19:49:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:49:39Z",
+      "lat": 35.91008496,
+      "lon": -79.05379771,
+      "address": "201 S Columbia St, Chapel Hill, NC 27599-3175",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "6 mph",
+      "bearing": 332.7,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91008496,-79.05379771"
+    },
+    {
+      "id": 27,
+      "recorded_at": "2026-09-18T19:50:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:50:37Z",
+      "lat": 35.91194184,
+      "lon": -79.05503108,
+      "address": "S Columbia St, Chapel Hill, NC 27599-3175",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91194184,-79.05503108"
+    },
+    {
+      "id": 29,
+      "recorded_at": "2026-09-18T19:51:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:51:46Z",
+      "lat": 35.91240202,
+      "lon": -79.05529979,
+      "address": "101 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "4 mph",
+      "bearing": 336.4,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91240202,-79.05529979"
+    },
+    {
+      "id": 31,
+      "recorded_at": "2026-09-18T19:52:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:52:00Z",
+      "lat": 35.9125758,
+      "lon": -79.05540354,
+      "address": "101 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9125758,-79.05540354"
+    },
+    {
+      "id": 33,
+      "recorded_at": "2026-09-18T19:53:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:53:45Z",
+      "lat": 35.91304822,
+      "lon": -79.05566041,
+      "address": "100 S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "11 mph",
+      "bearing": 338.7,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91304822,-79.05566041"
+    },
+    {
+      "id": 35,
+      "recorded_at": "2026-09-18T19:54:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:54:37Z",
+      "lat": 35.91708514,
+      "lon": -79.05657042,
+      "address": "408 Martin Luther King Junior Blvd, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "28 mph",
+      "bearing": 9.4,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91708514,-79.05657042"
+    },
+    {
+      "id": 37,
+      "recorded_at": "2026-09-18T19:55:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:55:44Z",
+      "lat": 35.91912447,
+      "lon": -79.05349504,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912447,-79.05349504"
+    },
+    {
+      "id": 41,
+      "recorded_at": "2026-09-18T19:57:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:56:40Z",
+      "lat": 35.91912368,
+      "lon": -79.053494,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912368,-79.053494"
+    },
+    {
+      "id": 43,
+      "recorded_at": "2026-09-18T19:58:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:57:40Z",
+      "lat": 35.91912314,
+      "lon": -79.05349393,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912314,-79.05349393"
+    },
+    {
+      "id": 45,
+      "recorded_at": "2026-09-18T19:59:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:58:40Z",
+      "lat": 35.91912289,
+      "lon": -79.05349347,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912289,-79.05349347"
+    },
+    {
+      "id": 47,
+      "recorded_at": "2026-09-18T20:00:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T19:59:40Z",
+      "lat": 35.91912343,
+      "lon": -79.05349177,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912343,-79.05349177"
+    },
+    {
+      "id": 49,
+      "recorded_at": "2026-09-18T20:01:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:00:40Z",
+      "lat": 35.91912322,
+      "lon": -79.05349121,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912322,-79.05349121"
+    },
+    {
+      "id": 51,
+      "recorded_at": "2026-09-18T20:02:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:01:40Z",
+      "lat": 35.91912268,
+      "lon": -79.0534914,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912268,-79.0534914"
+    },
+    {
+      "id": 53,
+      "recorded_at": "2026-09-18T20:03:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:02:40Z",
+      "lat": 35.91912199,
+      "lon": -79.05349077,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912199,-79.05349077"
+    },
+    {
+      "id": 55,
+      "recorded_at": "2026-09-18T20:04:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:03:40Z",
+      "lat": 35.91912168,
+      "lon": -79.05349048,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912168,-79.05349048"
+    },
+    {
+      "id": 57,
+      "recorded_at": "2026-09-18T20:05:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:04:40Z",
+      "lat": 35.91912134,
+      "lon": -79.05349023,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912134,-79.05349023"
+    },
+    {
+      "id": 59,
+      "recorded_at": "2026-09-18T20:06:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:06:40Z",
+      "lat": 35.91912048,
+      "lon": -79.05348967,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912048,-79.05348967"
+    },
+    {
+      "id": 63,
+      "recorded_at": "2026-09-18T20:08:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:07:40Z",
+      "lat": 35.9191202,
+      "lon": -79.05348947,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.9191202,-79.05348947"
+    },
+    {
+      "id": 65,
+      "recorded_at": "2026-09-18T20:09:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:08:40Z",
+      "lat": 35.91911982,
+      "lon": -79.0534896,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91911982,-79.0534896"
+    },
+    {
+      "id": 67,
+      "recorded_at": "2026-09-18T20:21:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:21:46Z",
+      "lat": 35.90750126,
+      "lon": -79.04524806,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "8 mph",
+      "bearing": 137.9,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90750126,-79.04524806"
+    },
+    {
+      "id": 69,
+      "recorded_at": "2026-09-18T20:22:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:22:46Z",
+      "lat": 35.90638313,
+      "lon": -79.04457952,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "8 mph",
+      "bearing": 247.3,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90638313,-79.04457952"
+    },
+    {
+      "id": 71,
+      "recorded_at": "2026-09-18T20:23:47Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:23:45Z",
+      "lat": 35.90386078,
+      "lon": -79.04436484,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "1 mph",
+      "bearing": 192.6,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90386078,-79.04436484"
+    },
+    {
+      "id": 73,
+      "recorded_at": "2026-09-18T20:24:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:24:42Z",
+      "lat": 35.90270096,
+      "lon": -79.04434125,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "20 mph",
+      "bearing": 172.8,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90270096,-79.04434125"
+    },
+    {
+      "id": 75,
+      "recorded_at": "2026-09-18T20:25:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:25:47Z",
+      "lat": 35.90089113,
+      "lon": -79.04612695,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": null,
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90089113,-79.04612695"
+    },
+    {
+      "id": 77,
+      "recorded_at": "2026-09-18T20:26:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:26:46Z",
+      "lat": 35.90131793,
+      "lon": -79.04412762,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": 83.1,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90131793,-79.04412762"
+    },
+    {
+      "id": 79,
+      "recorded_at": "2026-09-18T20:27:48Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:27:32Z",
+      "lat": 35.90348598,
+      "lon": -79.04430698,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90348598,-79.04430698"
+    },
+    {
+      "id": 81,
+      "recorded_at": "2026-09-18T20:28:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:28:44Z",
+      "lat": 35.90383297,
+      "lon": -79.04589415,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "22 mph",
+      "bearing": 254.4,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90383297,-79.04589415"
+    },
+    {
+      "id": 83,
+      "recorded_at": "2026-09-18T20:29:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:29:31Z",
+      "lat": 35.9030579,
+      "lon": -79.05020024,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9030579,-79.05020024"
+    },
+    {
+      "id": 85,
+      "recorded_at": "2026-09-18T20:30:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:30:48Z",
+      "lat": 35.90455378,
+      "lon": -79.05437425,
+      "address": "Manning Dr, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "9 mph",
+      "bearing": 316.0,
+      "compass": "S",
+      "maps_url": "https://www.google.com/maps?q=35.90455378,-79.05437425"
+    },
+    {
+      "id": 87,
+      "recorded_at": "2026-09-18T20:31:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:31:38Z",
+      "lat": 35.90640289,
+      "lon": -79.05296621,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "18 mph",
+      "bearing": 11.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90640289,-79.05296621"
+    },
+    {
+      "id": 89,
+      "recorded_at": "2026-09-18T20:32:49Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:32:48Z",
+      "lat": 35.90806736,
+      "lon": -79.05279529,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "13 mph",
+      "bearing": 354.5,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90806736,-79.05279529"
+    },
+    {
+      "id": 91,
+      "recorded_at": "2026-09-18T20:33:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:33:15Z",
+      "lat": 35.90889706,
+      "lon": -79.05306613,
+      "address": "S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90889706,-79.05306613"
+    },
+    {
+      "id": 93,
+      "recorded_at": "2026-09-18T20:34:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:34:30Z",
+      "lat": 35.90988941,
+      "lon": -79.05366336,
+      "address": "203 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90988941,-79.05366336"
+    },
+    {
+      "id": 97,
+      "recorded_at": "2026-09-18T20:36:50Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:36:29Z",
+      "lat": 35.91064821,
+      "lon": -79.05416446,
+      "address": "201 S Columbia St, Chapel Hill, NC 27599-3175",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91064821,-79.05416446"
+    },
+    {
+      "id": 101,
+      "recorded_at": "2026-09-18T20:38:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:38:47Z",
+      "lat": 35.91239498,
+      "lon": -79.05528888,
+      "address": "101 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "22 mph",
+      "bearing": 333.2,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91239498,-79.05528888"
+    },
+    {
+      "id": 103,
+      "recorded_at": "2026-09-18T20:39:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:39:04Z",
+      "lat": 35.91288211,
+      "lon": -79.05557028,
+      "address": "100 S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91288211,-79.05557028"
+    },
+    {
+      "id": 105,
+      "recorded_at": "2026-09-18T20:40:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:40:48Z",
+      "lat": 35.91477885,
+      "lon": -79.05660647,
+      "address": "208 N Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "27 mph",
+      "bearing": 330.4,
+      "compass": "NW",
+      "maps_url": "https://www.google.com/maps?q=35.91477885,-79.05660647"
+    },
+    {
+      "id": 107,
+      "recorded_at": "2026-09-18T20:41:51Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:41:49Z",
+      "lat": 35.91920639,
+      "lon": -79.05460735,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "8 mph",
+      "bearing": 96.5,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91920639,-79.05460735"
+    },
+    {
+      "id": 109,
+      "recorded_at": "2026-09-18T20:42:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:42:28Z",
+      "lat": 35.91912023,
+      "lon": -79.05348937,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912023,-79.05348937"
+    },
+    {
+      "id": 111,
+      "recorded_at": "2026-09-18T20:43:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:43:50Z",
+      "lat": 35.91912009,
+      "lon": -79.05347015,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": 84.3,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912009,-79.05347015"
+    },
+    {
+      "id": 113,
+      "recorded_at": "2026-09-18T20:44:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:44:50Z",
+      "lat": 35.91905495,
+      "lon": -79.05613429,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "3 mph",
+      "bearing": 270.8,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91905495,-79.05613429"
+    },
+    {
+      "id": 115,
+      "recorded_at": "2026-09-18T20:45:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:45:51Z",
+      "lat": 35.91346468,
+      "lon": -79.05602421,
+      "address": "101 N Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "8 mph",
+      "bearing": 156.2,
+      "compass": "NW",
+      "maps_url": "https://www.google.com/maps?q=35.91346468,-79.05602421"
+    },
+    {
+      "id": 117,
+      "recorded_at": "2026-09-18T20:46:52Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:45:59Z",
+      "lat": 35.91340325,
+      "lon": -79.05598917,
+      "address": "N Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "NW",
+      "maps_url": "https://www.google.com/maps?q=35.91340325,-79.05598917"
+    },
+    {
+      "id": 119,
+      "recorded_at": "2026-09-18T20:47:53Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:47:50Z",
+      "lat": 35.91132824,
+      "lon": -79.05475942,
+      "address": "S Columbia St, Chapel Hill, NC 27599-3175",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "18 mph",
+      "bearing": 154.5,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91132824,-79.05475942"
+    },
+    {
+      "id": 121,
+      "recorded_at": "2026-09-18T20:48:53Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:48:51Z",
+      "lat": 35.91147817,
+      "lon": -79.05221866,
+      "address": "140 E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": null,
+      "bearing": 66.3,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91147817,-79.05221866"
+    },
+    {
+      "id": 123,
+      "recorded_at": "2026-09-18T20:49:53Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:49:52Z",
+      "lat": 35.91266109,
+      "lon": -79.04921584,
+      "address": "235 E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "18 mph",
+      "bearing": 56.1,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.91266109,-79.04921584"
+    },
+    {
+      "id": 125,
+      "recorded_at": "2026-09-18T20:50:53Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:50:52Z",
+      "lat": 35.91109885,
+      "lon": -79.04683248,
+      "address": "Raleigh St, Chapel Hill, NC 27599-3330",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "15 mph",
+      "bearing": 170.8,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.91109885,-79.04683248"
+    },
+    {
+      "id": 127,
+      "recorded_at": "2026-09-18T20:51:54Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:51:31Z",
+      "lat": 35.90983801,
+      "lon": -79.04756839,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.90983801,-79.04756839"
+    },
+    {
+      "id": 129,
+      "recorded_at": "2026-09-18T20:52:54Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:52:44Z",
+      "lat": 35.90961168,
+      "lon": -79.04801054,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": 242.3,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90961168,-79.04801054"
+    },
+    {
+      "id": 131,
+      "recorded_at": "2026-09-18T20:53:54Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:53:48Z",
+      "lat": 35.90837659,
+      "lon": -79.04728684,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "5 mph",
+      "bearing": 119.3,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90837659,-79.04728684"
+    },
+    {
+      "id": 133,
+      "recorded_at": "2026-09-18T20:54:54Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:54:48Z",
+      "lat": 35.90751867,
+      "lon": -79.04526754,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "9 mph",
+      "bearing": 133.4,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90751867,-79.04526754"
+    },
+    {
+      "id": 135,
+      "recorded_at": "2026-09-18T20:55:54Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:55:46Z",
+      "lat": 35.90671097,
+      "lon": -79.04458587,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "5 mph",
+      "bearing": 161.2,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90671097,-79.04458587"
+    },
+    {
+      "id": 137,
+      "recorded_at": "2026-09-18T20:56:55Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:56:53Z",
+      "lat": 35.90490081,
+      "lon": -79.04500455,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "24 mph",
+      "bearing": 129.6,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90490081,-79.04500455"
+    },
+    {
+      "id": 139,
+      "recorded_at": "2026-09-18T20:57:55Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:57:52Z",
+      "lat": 35.90173862,
+      "lon": -79.0453899,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "14 mph",
+      "bearing": 244.7,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90173862,-79.0453899"
+    },
+    {
+      "id": 141,
+      "recorded_at": "2026-09-18T20:58:55Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:58:52Z",
+      "lat": 35.90127142,
+      "lon": -79.04491798,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "14 mph",
+      "bearing": 82.8,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90127142,-79.04491798"
+    },
+    {
+      "id": 143,
+      "recorded_at": "2026-09-18T20:59:55Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T20:59:51Z",
+      "lat": 35.90347652,
+      "lon": -79.04432084,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90347652,-79.04432084"
+    },
+    {
+      "id": 147,
+      "recorded_at": "2026-09-18T21:01:56Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:01:54Z",
+      "lat": 35.90298634,
+      "lon": -79.04934427,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "25 mph",
+      "bearing": 271.1,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90298634,-79.04934427"
+    },
+    {
+      "id": 149,
+      "recorded_at": "2026-09-18T21:02:56Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:02:53Z",
+      "lat": 35.90435651,
+      "lon": -79.05413807,
+      "address": "Manning Dr, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "16 mph",
+      "bearing": 313.4,
+      "compass": "S",
+      "maps_url": "https://www.google.com/maps?q=35.90435651,-79.05413807"
+    },
+    {
+      "id": 151,
+      "recorded_at": "2026-09-18T21:03:56Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:03:53Z",
+      "lat": 35.9055093,
+      "lon": -79.05338467,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "6 mph",
+      "bearing": 11.3,
+      "compass": "S",
+      "maps_url": "https://www.google.com/maps?q=35.9055093,-79.05338467"
+    },
+    {
+      "id": 153,
+      "recorded_at": "2026-09-18T21:04:56Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:04:37Z",
+      "lat": 35.9079574,
+      "lon": -79.05277311,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9079574,-79.05277311"
+    },
+    {
+      "id": 155,
+      "recorded_at": "2026-09-18T21:05:57Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:05:50Z",
+      "lat": 35.9093799,
+      "lon": -79.05336488,
+      "address": "S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9093799,-79.05336488"
+    },
+    {
+      "id": 157,
+      "recorded_at": "2026-09-18T21:06:57Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:06:35Z",
+      "lat": 35.90978593,
+      "lon": -79.05358199,
+      "address": "203 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90978593,-79.05358199"
+    },
+    {
+      "id": 159,
+      "recorded_at": "2026-09-18T21:07:57Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:07:34Z",
+      "lat": 35.91008951,
+      "lon": -79.05380296,
+      "address": "201 S Columbia St, Chapel Hill, NC 27599-3175",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": 329.6,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91008951,-79.05380296"
+    },
+    {
+      "id": 161,
+      "recorded_at": "2026-09-18T21:08:57Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:08:56Z",
+      "lat": 35.9114505,
+      "lon": -79.0547469,
+      "address": "S Columbia St, Chapel Hill, NC 27599-3175",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "21 mph",
+      "bearing": 334.2,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.9114505,-79.0547469"
+    },
+    {
+      "id": 163,
+      "recorded_at": "2026-09-18T21:09:58Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:09:52Z",
+      "lat": 35.91279799,
+      "lon": -79.05551729,
+      "address": "101 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": 332.3,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91279799,-79.05551729"
+    },
+    {
+      "id": 165,
+      "recorded_at": "2026-09-18T21:10:58Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:10:56Z",
+      "lat": 35.91401779,
+      "lon": -79.05620186,
+      "address": "N Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "21 mph",
+      "bearing": 334.3,
+      "compass": "NW",
+      "maps_url": "https://www.google.com/maps?q=35.91401779,-79.05620186"
+    },
+    {
+      "id": 167,
+      "recorded_at": "2026-09-18T21:11:58Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:11:58Z",
+      "lat": 35.91921661,
+      "lon": -79.05523956,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "22 mph",
+      "bearing": 84.3,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91921661,-79.05523956"
+    },
+    {
+      "id": 169,
+      "recorded_at": "2026-09-18T21:12:58Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:12:26Z",
+      "lat": 35.91912195,
+      "lon": -79.05351412,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91912195,-79.05351412"
+    },
+    {
+      "id": 171,
+      "recorded_at": "2026-09-18T21:13:58Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:13:50Z",
+      "lat": 35.91909736,
+      "lon": -79.05307396,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "1 mph",
+      "bearing": 42.7,
+      "compass": "NE",
+      "maps_url": "https://www.google.com/maps?q=35.91909736,-79.05307396"
+    },
+    {
+      "id": 173,
+      "recorded_at": "2026-09-18T21:14:59Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:14:50Z",
+      "lat": 35.91904793,
+      "lon": -79.05614533,
+      "address": "Central Park Ln, Chapel Hill, NC 27515",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "N",
+      "maps_url": "https://www.google.com/maps?q=35.91904793,-79.05614533"
+    },
+    {
+      "id": 175,
+      "recorded_at": "2026-09-18T21:15:59Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:15:53Z",
+      "lat": 35.91390984,
+      "lon": -79.05627227,
+      "address": "N Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "22 mph",
+      "bearing": 154.8,
+      "compass": "NW",
+      "maps_url": "https://www.google.com/maps?q=35.91390984,-79.05627227"
+    },
+    {
+      "id": 177,
+      "recorded_at": "2026-09-18T21:16:59Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:16:40Z",
+      "lat": 35.91099278,
+      "lon": -79.05455971,
+      "address": "145 S Columbia St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91099278,-79.05455971"
+    },
+    {
+      "id": 179,
+      "recorded_at": "2026-09-18T21:17:59Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:17:54Z",
+      "lat": 35.91122657,
+      "lon": -79.05290929,
+      "address": "E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "14 mph",
+      "bearing": 69.4,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.91122657,-79.05290929"
+    },
+    {
+      "id": 181,
+      "recorded_at": "2026-09-18T21:18:59Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:18:58Z",
+      "lat": 35.91246412,
+      "lon": -79.04965205,
+      "address": "E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "19 mph",
+      "bearing": 67.2,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.91246412,-79.04965205"
+    },
+    {
+      "id": 183,
+      "recorded_at": "2026-09-18T21:20:00Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:19:24Z",
+      "lat": 35.91304353,
+      "lon": -79.04815024,
+      "address": "245 E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.91304353,-79.04815024"
+    },
+    {
+      "id": 185,
+      "recorded_at": "2026-09-18T21:21:00Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:20:49Z",
+      "lat": 35.9120015,
+      "lon": -79.04726646,
+      "address": "204 Raleigh St, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "14 mph",
+      "bearing": 154.3,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.9120015,-79.04726646"
+    },
+    {
+      "id": 187,
+      "recorded_at": "2026-09-18T21:22:00Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:21:56Z",
+      "lat": 35.90980275,
+      "lon": -79.04759178,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": null,
+      "bearing": -1.0,
+      "compass": "E",
+      "maps_url": "https://www.google.com/maps?q=35.90980275,-79.04759178"
+    },
+    {
+      "id": 189,
+      "recorded_at": "2026-09-18T21:23:00Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:22:58Z",
+      "lat": 35.90856931,
+      "lon": -79.04779693,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "14 mph",
+      "bearing": 107.9,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90856931,-79.04779693"
+    },
+    {
+      "id": 191,
+      "recorded_at": "2026-09-18T21:24:00Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:23:53Z",
+      "lat": 35.90770662,
+      "lon": -79.04552212,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "3 mph",
+      "bearing": 127.8,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90770662,-79.04552212"
+    },
+    {
+      "id": 193,
+      "recorded_at": "2026-09-18T21:25:01Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:24:54Z",
+      "lat": 35.90662268,
+      "lon": -79.04452357,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "6 mph",
+      "bearing": 177.9,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90662268,-79.04452357"
+    },
+    {
+      "id": 195,
+      "recorded_at": "2026-09-18T21:26:01Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:25:59Z",
+      "lat": 35.90579732,
+      "lon": -79.04541421,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "8 mph",
+      "bearing": 197.2,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90579732,-79.04541421"
+    },
+    {
+      "id": 197,
+      "recorded_at": "2026-09-18T21:27:01Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:26:44Z",
+      "lat": 35.90408298,
+      "lon": -79.04428908,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90408298,-79.04428908"
+    },
+    {
+      "id": 199,
+      "recorded_at": "2026-09-18T21:28:01Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:27:59Z",
+      "lat": 35.90182045,
+      "lon": -79.04485221,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "17 mph",
+      "bearing": 264.1,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90182045,-79.04485221"
+    },
+    {
+      "id": 201,
+      "recorded_at": "2026-09-18T21:29:02Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:28:58Z",
+      "lat": 35.90091473,
+      "lon": -79.04580627,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "11 mph",
+      "bearing": 63.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90091473,-79.04580627"
+    },
+    {
+      "id": 203,
+      "recorded_at": "2026-09-18T21:30:02Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:29:58Z",
+      "lat": 35.90324643,
+      "lon": -79.04431692,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "8 mph",
+      "bearing": 353.9,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90324643,-79.04431692"
+    },
+    {
+      "id": 205,
+      "recorded_at": "2026-09-18T21:31:02Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:30:59Z",
+      "lat": 35.90304203,
+      "lon": -79.04863517,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90304203,-79.04863517"
+    },
+    {
+      "id": 207,
+      "recorded_at": "2026-09-18T21:32:02Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "uuid": "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-18T21:31:49Z",
+      "lat": 35.90304372,
+      "lon": -79.05021236,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "maps_url": "https://www.google.com/maps?q=35.90304372,-79.05021236"
+    }
+  ],
+  "color": "#0b6e4f"
+}

@@ -1,12 +1,12 @@
 {
-  "exported_at": "2026-09-22T17:50:46Z",
-  "ping_count": 2118,
+  "exported_at": "2026-09-22T17:51:27Z",
+  "ping_count": 2120,
   "by_route": {
     "regular": 1339,
-    "express": 779
+    "express": 781
   },
   "by_vehicle": {
-    "express": 1178,
+    "express": 1180,
     "regular": 940
   },
   "notes": "train_ok pings only. shuttle_key = Motive vehicle; route_key = passenger service loop used for ETA training.",
@@ -55068,9 +55068,9 @@
       "speed": "0 mph",
       "bearing": -1.0,
       "compass": "SE",
-      "speed_mph": null,
-      "s_m": null,
-      "loop_frac": null,
+      "speed_mph": 0.0,
+      "s_m": 5979.0,
+      "loop_frac": 0.8167,
       "route_key": "regular",
       "route_status": "on_route",
       "route_off_m": 1.6,
@@ -55078,6 +55078,58 @@
       "regular_off_m": 1.6,
       "train_ok": 1,
       "label_reason": "sticky:regular"
+    },
+    {
+      "id": 3953,
+      "recorded_at": "2026-09-22T17:50:59Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1: Express \u2192 Regular (starting at 2 PM)",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-22T17:50:56Z",
+      "lat": 35.91128646,
+      "lon": -79.05290964,
+      "address": "137 E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "2 mph",
+      "bearing": 243.9,
+      "compass": "SE",
+      "speed_mph": 2.0,
+      "s_m": 2072.1,
+      "loop_frac": 0.5995,
+      "route_key": "express",
+      "route_status": "on_route",
+      "route_off_m": 3.8,
+      "express_off_m": 3.8,
+      "regular_off_m": 3.8,
+      "train_ok": 1,
+      "label_reason": "sticky:express"
+    },
+    {
+      "id": 3955,
+      "recorded_at": "2026-09-22T17:51:09Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1: Express \u2192 Regular (starting at 2 PM)",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-22T17:51:03Z",
+      "lat": 35.91127993,
+      "lon": -79.05293582,
+      "address": "137 E Cameron Ave, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE",
+      "speed_mph": 0.0,
+      "s_m": 1381.7,
+      "loop_frac": 0.3998,
+      "route_key": "express",
+      "route_status": "on_route",
+      "route_off_m": 4.2,
+      "express_off_m": 4.2,
+      "regular_off_m": 4.2,
+      "train_ok": 1,
+      "label_reason": "sticky:express"
     }
   ]
 }

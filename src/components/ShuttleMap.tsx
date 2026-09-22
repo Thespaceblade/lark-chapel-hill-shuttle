@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -70,12 +70,31 @@ function FitToRoutes({
   return null;
 }
 
-function busIcon(color: string, label: string) {
+function busIcon(
+  key: ShuttleKey,
+  color: string,
+  label: string,
+  bearing: number | null,
+  showArrow: boolean,
+) {
+  const rot =
+    showArrow && bearing != null && Number.isFinite(bearing)
+      ? ((bearing % 360) + 360) % 360
+      : null;
+  const arrow =
+    rot == null
+      ? ""
+      : `<div class="${styles.busArrowRing}" style="transform:rotate(${rot}deg)">
+           <div class="${styles.busArrow}" data-line="${key}"></div>
+         </div>`;
   return L.divIcon({
     className: styles.busIconWrap,
-    html: `<div class="${styles.busIcon}" style="--bus:${color}"><span>${label}</span></div>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 18],
+    html: `<div class="${styles.busMarker}">
+      ${arrow}
+      <div class="${styles.busIcon}" style="--bus:${color}"><span>${label}</span></div>
+    </div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
   });
 }
 
@@ -87,14 +106,6 @@ export default function ShuttleMap({
 }: Props) {
   const showExpress = focus === "both" || focus === "express";
   const showRegular = focus === "both" || focus === "regular";
-
-  const icons = useMemo(
-    () => ({
-      express: busIcon(SHUTTLES.express.color, SHUTTLES.express.bullet),
-      regular: busIcon(SHUTTLES.regular.color, SHUTTLES.regular.bullet),
-    }),
-    [],
-  );
 
   return (
     <div className={styles.mapRoot}>
@@ -167,17 +178,26 @@ export default function ShuttleMap({
         {shuttles.map((s) => {
           if (s.lat == null || s.lon == null) return null;
           if (focus !== "both" && focus !== s.key) return null;
+          const meta = SHUTTLES[s.key];
+          const moving =
+            (s.state || "").toLowerCase() === "moving" && !s.atLark;
+          const icon = busIcon(
+            s.key,
+            meta.color,
+            meta.bullet,
+            s.bearing,
+            moving,
+          );
           return (
-            <Marker
-              key={s.key}
-              position={[s.lat, s.lon]}
-              icon={icons[s.key]}
-            >
+            <Marker key={s.key} position={[s.lat, s.lon]} icon={icon}>
               <Tooltip direction="top" offset={[0, -12]} permanent={false}>
                 <strong>{s.name}</strong>
                 <br />
                 {s.atLark ? "at Lark" : s.state}
                 {s.speed ? ` · ${s.speed}` : ""}
+                {s.bearing != null && moving
+                  ? ` · heading ${Math.round(s.bearing)}°`
+                  : ""}
                 {s.atLark ? (
                   <>
                     <br />

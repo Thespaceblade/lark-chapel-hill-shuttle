@@ -50,6 +50,16 @@ export const SHUTTLES: Record<
 
 export const MOTIVE = {
   endpoint: "https://api.keeptruckin.com/api/s1/live_shares",
-  apiKey: "3gCAa2VxLV3nlJfk7EhzJUEe5lg3IU9b50sNyOfUSSE6Fg2ACZr6GK5KqpMW55rn",
   userAgent: "lark-shuttle-web/0.1 (+vercel)",
 };
+
+/** Server-only Motive share key — set MOTIVE_WEB_SHARE_API_KEY in env. */
+export function getMotiveApiKey(): string {
+  const key = process.env.MOTIVE_WEB_SHARE_API_KEY?.trim();
+  if (!key) {
+    throw new Error(
+      "Missing MOTIVE_WEB_SHARE_API_KEY. Add it in Vercel → Project → Settings → Environment Variables (or web/.env.local).",
+    );
+  }
+  return key;
+}

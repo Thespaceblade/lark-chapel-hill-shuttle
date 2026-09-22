@@ -30,6 +30,23 @@ function fromXy(x: number, y: number, lat0: number, lon0: number): [number, numb
   return [lat, lon];
 }
 
+/** Angle difference in degrees, 0–180. */
+function bearingDiffDeg(a: number, b: number): number {
+  return Math.abs(((((a - b) % 360) + 540) % 360) - 180);
+}
+
+/** Segment bearing in degrees clockwise from north. */
+function segmentBearingDeg(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+): number {
+  const dx = bx - ax; // east
+  const dy = by - ay; // north
+  return ((Math.atan2(dx, dy) * 180) / Math.PI + 360) % 360;
+}
+
 export type Projection = {
   lat: number;
   lon: number;
@@ -44,6 +61,8 @@ export class RouteLoop {
   readonly points: [number, number][];
   readonly cum: number[];
   readonly lengthM: number;
+  /** First service encounter of each stop along the loop from route start. */
+  readonly stopSM: Map<string, number>;
   private lat0: number;
   private lon0: number;
   private xy: { x: number; y: number }[];
@@ -72,10 +91,76 @@ export class RouteLoop {
     this.lat0 = pts[0][0];
     this.lon0 = pts[0][1];
     this.xy = pts.map(([lat, lon]) => toXy(lat, lon, this.lat0, this.lon0));
+    this.stopSM = new Map();
+    for (const stop of stops) {
+      const passages = this.passagesNearStop(stop);
+      const primary = passages.length
+        ? Math.min(...passages.map((p) => p.sM))
+        : this.project(stop.lat, stop.lon).sM;
+      this.stopSM.set(stop.key, primary);
+    }
   }
 
-  project(lat: number, lon: number): Projection {
+  /**
+   * Places along the polyline that pass near a stop pin.
+   * Overlapping out-and-back / return legs create multiple passages; service
+   * uses the earliest (primary) so a return past Memorial is not a stop again.
+   */
+  passagesNearStop(
+    stop: Stop,
+    maxOffsetM = 45,
+    clusterGapM = 80,
+  ): { sM: number; offsetM: number }[] {
+    const p = toXy(stop.lat, stop.lon, this.lat0, this.lon0);
+    const hits: { sM: number; offsetM: number }[] = [];
+    for (let i = 0; i < this.xy.length - 1; i++) {
+      const a = this.xy[i];
+      const b = this.xy[i + 1];
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const seg2 = dx * dx + dy * dy;
+      let t = 0;
+      if (seg2 > 1e-12) {
+        t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / seg2));
+      }
+      const qx = a.x + t * dx;
+      const qy = a.y + t * dy;
+      const offsetM = Math.hypot(p.x - qx, p.y - qy);
+      if (offsetM <= maxOffsetM) {
+        const sM = this.cum[i] + t * (this.cum[i + 1] - this.cum[i]);
+        hits.push({ sM: sM % this.lengthM, offsetM });
+      }
+    }
+    if (!hits.length) return [];
+    hits.sort((a, b) => a.sM - b.sM);
+    const clusters: { sM: number; offsetM: number }[][] = [];
+    let cur: { sM: number; offsetM: number }[] = [hits[0]];
+    for (let i = 1; i < hits.length; i++) {
+      if (hits[i].sM - cur[cur.length - 1].sM > clusterGapM) {
+        clusters.push(cur);
+        cur = [hits[i]];
+      } else {
+        cur.push(hits[i]);
+      }
+    }
+    clusters.push(cur);
+    return clusters.map((c) =>
+      c.reduce((best, h) => (h.offsetM < best.offsetM ? h : best)),
+    );
+  }
+
+  /**
+   * Snap a position onto the loop. When `bearingDeg` is set (Motive heading),
+   * prefer segments traveling the same direction — critical where outbound and
+   * return share the same road near Memorial / Columbia.
+   */
+  project(
+    lat: number,
+    lon: number,
+    bearingDeg: number | null = null,
+  ): Projection {
     const p = toXy(lat, lon, this.lat0, this.lon0);
+    let bestScore = Infinity;
     let bestD2 = Infinity;
     let bestI = 0;
     let bestT = 0;
@@ -96,7 +181,15 @@ export class RouteLoop {
         qy = a.y + t * dy;
       }
       const d2 = (p.x - qx) ** 2 + (p.y - qy) ** 2;
-      if (d2 < bestD2) {
+      let score = d2;
+      if (bearingDeg != null && Number.isFinite(bearingDeg) && seg2 > 1e-6) {
+        const segBrg = segmentBearingDeg(a.x, a.y, b.x, b.y);
+        const diff = bearingDiffDeg(segBrg, bearingDeg);
+        // ~30 m penalty at opposite heading — breaks outbound/return ties.
+        score = d2 + (diff / 180) ** 2 * 30 ** 2;
+      }
+      if (score < bestScore) {
+        bestScore = score;
         bestD2 = d2;
         bestI = i;
         bestT = t;
@@ -126,8 +219,8 @@ export class RouteLoop {
     let bestAlong = Infinity;
 
     for (const stop of this.stops) {
-      const sp = this.project(stop.lat, stop.lon);
-      let ahead = (sp.sM - proj.sM) % this.lengthM;
+      const sp = this.stopSM.get(stop.key) ?? this.project(stop.lat, stop.lon).sM;
+      let ahead = (sp - proj.sM) % this.lengthM;
       if (ahead < 0) ahead += this.lengthM;
       if (ahead < atStopM) continue;
       if (ahead < bestAlong) {
@@ -138,8 +231,8 @@ export class RouteLoop {
 
     if (!best) {
       for (const stop of this.stops) {
-        const sp = this.project(stop.lat, stop.lon);
-        let ahead = (sp.sM - proj.sM) % this.lengthM;
+        const sp = this.stopSM.get(stop.key) ?? this.project(stop.lat, stop.lon).sM;
+        let ahead = (sp - proj.sM) % this.lengthM;
         if (ahead < 0) ahead += this.lengthM;
         if (ahead < 1) ahead = this.lengthM;
         if (ahead < bestAlong) {

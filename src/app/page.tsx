@@ -32,17 +32,6 @@ type Stop = { key: string; name: string; lat: number; lon: number };
 
 const POLL_MS = 1_000;
 
-function ageLabel(iso: string | null): string {
-  if (!iso) return "—";
-  const sec = Math.max(
-    0,
-    Math.round((Date.now() - new Date(iso).getTime()) / 1000),
-  );
-  if (sec < 60) return `${sec}s ago`;
-  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
-  return `${Math.floor(sec / 3600)}h ago`;
-}
-
 function statusWord(s: LiveShuttle | undefined): string {
   if (!s || s.serviceStatus === "no_bus") return "no bus";
   if (s.serviceStatus === "out_of_service") return "not in service";
@@ -56,7 +45,8 @@ function statusWord(s: LiveShuttle | undefined): string {
   if (s.atLark) return "at Lark";
   const st = (s.state || "").toLowerCase();
   if (st === "moving") return "en route";
-  if (st === "idling") return "holding";
+  // Motive "idling" includes lights — only call it holding at a real stop.
+  if (st === "idling") return s.atStop ? "holding" : "en route";
   if (st === "off") return "out of service";
   return st || "unknown";
 }
@@ -84,66 +74,33 @@ function boardForShuttle(
   // Parked / fueling / off-network — never a next-stop or departure timer.
   if (s.serviceStatus === "out_of_service") {
     return {
-      label: "Not in service",
-      name: s.assignmentNote ?? "Not rideable",
-      etaMin: null,
-      detail: s.address,
-    };
-  }
-
-  // Usual bus is covering the other line — still show live next stop / hold
-  // for the route it's actually on (not this line's schedule pretend).
-  if (s.serviceStatus === "diverted") {
-    const other = s.divertedTo ? SHUTTLES[s.divertedTo].name : "other line";
-    if (s.atLark && s.larkSchedule) {
-      const snap = s.larkSchedule as LarkScheduleSnapshot;
-      const hold = larkHoldBoard(snap, holdSlotMin);
-      if (hold.mode === "lark_unscheduled") {
-        return {
-          label: `On ${other}`,
-          name: "Lark Chapel Hill",
-          etaMin: null,
-          detail: `${s.assignmentNote ?? `Running ${other}`} · departure unknown`,
-        };
-      }
-      return {
-        label: `Departing (${other})`,
-        name: "Lark Chapel Hill",
-        etaMin: hold.etaMin,
-        detail: [
-          s.assignmentNote ?? `Running ${other} — not ${s.name} service`,
-          hold.departAtLabel ? `Scheduled ${hold.departAtLabel}` : null,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      };
-    }
-    if (s.nextStop) {
-      return {
-        label: `Next on ${other}`,
-        name: s.nextStop.name,
-        etaMin:
-          s.nextStop.etaMin != null
-            ? Math.max(0, Math.round(s.nextStop.etaMin))
-            : null,
-        detail:
-          s.assignmentNote ?? `Running ${other} — not ${s.name} service`,
-      };
-    }
-    return {
-      label: `On ${other}`,
-      name: s.vehicleNumber ?? "Bus",
+      label: "Status",
+      name: "Not in service",
       etaMin: null,
       detail: s.assignmentNote,
     };
   }
 
+  // Usual bus is covering the other line — no next-stop / departure timer
+  // here (that belongs only on the active service board).
+  if (s.serviceStatus === "diverted") {
+    const other = s.divertedTo ? SHUTTLES[s.divertedTo].name : "other line";
+    return {
+      label: `On ${other}`,
+      name: `Bus is on ${other}`,
+      etaMin: null,
+      detail:
+        s.assignmentNote ??
+        `Not ${s.name} service — see ${other} for next stop`,
+    };
+  }
+
   if (!s.rideable) {
     return {
-      label: "Not in service",
-      name: s.assignmentNote ?? "Not rideable",
+      label: "Status",
+      name: "Not in service",
       etaMin: null,
-      detail: null,
+      detail: s.assignmentNote,
     };
   }
 
@@ -219,7 +176,6 @@ export default function HomePage() {
   const [routes, setRoutes] = useState<RoutesResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [focus, setFocus] = useState<ShuttleKey | "both">("both");
-  const [tick, setTick] = useState(0);
   /** Slot (minutes from midnight) each shuttle started holding for at Lark. */
   const holdSlots = useRef<Partial<Record<ShuttleKey, number | null>>>({
     express: null,
@@ -255,7 +211,7 @@ export default function HomePage() {
             const prev = holdSlots.current[s.key] ?? null;
             const trackHold =
               s.atLark &&
-              (s.serviceStatus === "active" || s.serviceStatus === "diverted") &&
+              s.serviceStatus === "active" &&
               s.larkSchedule;
 
             if (!trackHold) {
@@ -288,11 +244,9 @@ export default function HomePage() {
     }
     pull();
     const id = setInterval(pull, POLL_MS);
-    const age = setInterval(() => setTick((t) => t + 1), 1000);
     return () => {
       cancelled = true;
       clearInterval(id);
-      clearInterval(age);
     };
   }, []);
 
@@ -301,8 +255,6 @@ export default function HomePage() {
     live?.shuttles.forEach((s) => map.set(s.key, s));
     return map;
   }, [live]);
-
-  void tick;
 
   return (
     <main className={styles.shell}>
@@ -390,9 +342,13 @@ export default function HomePage() {
                         ? "off"
                         : s.serviceStatus === "diverted"
                           ? "idling"
-                          : s.atLark
+                          : s.atLark ||
+                              ((s.state || "").toLowerCase() === "idling" &&
+                                s.atStop)
                             ? "idling"
-                            : (s.state || "").toLowerCase()
+                            : (s.state || "").toLowerCase() === "idling"
+                              ? "moving"
+                              : (s.state || "").toLowerCase()
                     }
                   >
                     {statusWord(s)}
@@ -413,9 +369,7 @@ export default function HomePage() {
                         <span className={styles.etaUnit}>
                           {s?.serviceStatus === "active" && s.atLark
                             ? "TBD"
-                            : s?.serviceStatus === "diverted" && s.atLark
-                              ? "TBD"
-                              : "—"}
+                            : "—"}
                         </span>
                       )}
                     </div>
@@ -426,33 +380,12 @@ export default function HomePage() {
                     </div>
                   ) : null}
                 </div>
-
-                <div className={styles.metaGrid}>
-                  <div className={styles.metaItem}>
-                    <div className={styles.metaLabel}>Last reported</div>
-                    <div className={styles.metaValue}>
-                      {s?.address ?? "Waiting for signal"}
-                    </div>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <div className={styles.metaLabel}>Updated</div>
-                    <div className={styles.metaValue}>
-                      {ageLabel(s?.locatedAt ?? null)}
-                      {s?.speed ? ` · ${s.speed}` : ""}
-                    </div>
-                  </div>
-                </div>
               </section>
             );
           })}
         </div>
 
         {error ? <p className={styles.error}>{error}</p> : null}
-
-        <footer className={styles.footer}>
-          Live every 1s · Motive share
-          {live?.fetchedAt ? ` · ${ageLabel(live.fetchedAt)}` : ""}
-        </footer>
       </aside>
     </main>
   );

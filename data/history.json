@@ -1,9 +1,9 @@
 {
-  "exported_at": "2026-09-22T15:50:29Z",
-  "ping_count": 1393,
+  "exported_at": "2026-09-22T15:51:24Z",
+  "ping_count": 1397,
   "by_shuttle": {
     "regular": 602,
-    "express": 791
+    "express": 795
   },
   "pings": [
     {
@@ -22293,6 +22293,70 @@
       "speed": "0 mph",
       "bearing": -1.0,
       "compass": "S"
+    },
+    {
+      "id": 2543,
+      "recorded_at": "2026-09-22T15:50:35Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-22T15:50:33Z",
+      "lat": 35.90567841,
+      "lon": -79.05326701,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": 25.7,
+      "compass": "S"
+    },
+    {
+      "id": 2545,
+      "recorded_at": "2026-09-22T15:50:45Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-22T15:50:44Z",
+      "lat": 35.90649993,
+      "lon": -79.05291808,
+      "address": "Evergreen Ln, Chapel Hill, NC 27514",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "25 mph",
+      "bearing": 7.4,
+      "compass": "SE"
+    },
+    {
+      "id": 2549,
+      "recorded_at": "2026-09-22T15:51:06Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-22T15:51:04Z",
+      "lat": 35.90833488,
+      "lon": -79.05283645,
+      "address": "304 S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "moving",
+      "speed": "15 mph",
+      "bearing": 345.2,
+      "compass": "SE"
+    },
+    {
+      "id": 2551,
+      "recorded_at": "2026-09-22T15:51:16Z",
+      "shuttle_key": "express",
+      "shuttle_name": "Shuttle 1 (Express Shuttle)",
+      "vehicle_number": "Lark Chapel Hill 1",
+      "located_at": "2026-09-22T15:51:11Z",
+      "lat": 35.90837585,
+      "lon": -79.05284864,
+      "address": "300 S Columbia St, Chapel Hill, NC 27516",
+      "city": "Chapel Hill",
+      "entity_state": "idling",
+      "speed": "0 mph",
+      "bearing": -1.0,
+      "compass": "SE"
     }
   ]
 }

@@ -1,4 +1,10 @@
-import { MOTIVE, SHUTTLES, type LiveShuttle, type ShuttleKey } from "./shuttles";
+import {
+  MOTIVE,
+  SHUTTLES,
+  getMotiveApiKey,
+  type LiveShuttle,
+  type ShuttleKey,
+} from "./shuttles";
 import { RouteLoop, etaMinutes, parseSpeedMph } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
@@ -37,7 +43,7 @@ export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
     headers: {
       "User-Agent": MOTIVE.userAgent,
       Accept: "application/json",
-      "X-Web-Share-Api-Key": MOTIVE.apiKey,
+      "X-Web-Share-Api-Key": getMotiveApiKey(),
       Origin: "https://tracking.gomotive.com",
       Referer: "https://tracking.gomotive.com/",
     },

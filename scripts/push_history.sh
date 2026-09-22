@@ -68,5 +68,7 @@ git -c user.email="cursor-agent@users.noreply.github.com" \
     -c user.name="Cursor Agent" \
     commit -m "Update shuttle history snapshot (${COUNT} pings, ${STAMP})"
 
-git push origin HEAD
+# Integrate any remote commits (Vercel bots / other agents) then push
+git pull --rebase origin main
+git push origin main
 echo "[$STAMP] pushed history snapshot (${COUNT} pings)"

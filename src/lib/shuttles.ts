@@ -30,6 +30,8 @@ export type LiveShuttle = {
   } | null;
   /** True when GPS is inside the Lark curb geofence. */
   atLark: boolean;
+  /** True when GPS is near a published stop on this service (incl. Lark). */
+  atStop: boolean;
   /** False when parked/off-route/gas/diverted — not boarding this line. */
   rideable: boolean;
   /**

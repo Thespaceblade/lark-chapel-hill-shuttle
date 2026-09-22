@@ -34,8 +34,9 @@
   display: grid;
   place-items: start center;
   pointer-events: none;
-  transition: transform 0.35s ease;
+  transition: transform 0.9s ease-out, opacity 0.25s ease;
   overflow: visible;
+  will-change: transform;
 }
 
 .busArrow {

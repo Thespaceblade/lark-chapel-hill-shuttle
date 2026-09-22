@@ -17,6 +17,9 @@ export const LARK_DEPARTURE_GRACE_MIN = 2;
 /** Geofence around the Lark curb pin. */
 export const AT_LARK_RADIUS_M = 75;
 
+/** Near enough to a published stop pin to count as "holding" (not a light). */
+export const AT_STOP_RADIUS_M = 45;
+
 export const LARK_STOP = {
   key: "lark",
   name: "Lark Chapel Hill",

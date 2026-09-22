@@ -23,7 +23,8 @@ python3 lark_shuttle.py label --db "$DB_LIVE" --out-dir "${ROOT}/data"
 
 gh auth setup-git >/dev/null 2>&1 || true
 
-git add data/shuttle_history.db data/history.json data/train_pings.json
+git add data/shuttle_history.db data/history.json data/train_pings.json \
+        data/predictions.json data/train_predictions.json
 
 if git diff --cached --quiet; then
   echo "[$STAMP] history unchanged — nothing to push"
@@ -32,11 +33,12 @@ fi
 
 COUNT="$(python3 -c "import json; print(json.load(open('data/history.json'))['ping_count'])")"
 TRAIN="$(python3 -c "import json; print(json.load(open('data/train_pings.json'))['ping_count'])")"
+ARRIVED="$(python3 -c "import json; print(json.load(open('data/train_predictions.json'))['ping_count'])")"
 git -c user.email="cursor-agent@users.noreply.github.com" \
     -c user.name="Cursor Agent" \
-    commit -m "Update shuttle history snapshot (${COUNT} pings, ${TRAIN} train_ok, ${STAMP})"
+    commit -m "Update shuttle history snapshot (${COUNT} pings, ${TRAIN} train_ok, ${ARRIVED} arrived ETAs, ${STAMP})"
 
 # Integrate any remote commits (Vercel bots / other agents) then push
 git pull --rebase origin main
 git push origin main
-echo "[$STAMP] pushed history snapshot (${COUNT} pings, ${TRAIN} train_ok)"
+echo "[$STAMP] pushed history snapshot (${COUNT} pings, ${TRAIN} train_ok, ${ARRIVED} arrived ETAs)"

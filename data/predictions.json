@@ -1,0 +1,7 @@
+{
+  "exported_at": "2026-09-22T17:50:46Z",
+  "prediction_count": 0,
+  "arrived_prediction_count": 0,
+  "notes": "All ETA predictions logged by the collector. outcome=arrived rows include actual_min and error_min.",
+  "predictions": []
+}

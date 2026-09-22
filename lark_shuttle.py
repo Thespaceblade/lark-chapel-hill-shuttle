@@ -32,7 +32,11 @@ from route_loop import (
     resolve_route_key,
 )
 from label_route import label_all_pings, raw_geometry_label
-
+from eta_predict import (
+    ensure_predictions_table,
+    maybe_record_prediction,
+    parse_speed_mph,
+)
 LINKTREE_URL = "https://linktr.ee/larkchapelhill"
 TRACKING_ORIGIN = "https://tracking.gomotive.com"
 TRACKING_APP = f"{TRACKING_ORIGIN}/en-US/"
@@ -330,6 +334,7 @@ def connect_db(path: Path) -> sqlite3.Connection:
         "ON pings(shuttle_key, located_at)"
     )
     _ensure_route_label_columns(conn)
+    ensure_predictions_table(conn)
     conn.commit()
     return conn
 
@@ -342,6 +347,9 @@ _ROUTE_LABEL_COLUMNS: dict[str, str] = {
     "regular_off_m": "REAL",
     "train_ok": "INTEGER",
     "label_reason": "TEXT",
+    "speed_mph": "REAL",
+    "s_m": "REAL",
+    "loop_frac": "REAL",
 }
 
 
@@ -359,17 +367,37 @@ def _ensure_route_label_columns(conn: sqlite3.Connection) -> None:
         "ON pings(train_ok, route_key, located_at)"
     )
 
-def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
-    """Insert a ping if Motive's located_at is new. Returns True if inserted."""
+def save_ping(
+    conn: sqlite3.Connection,
+    summary: dict[str, Any],
+    *,
+    loops: dict[str, RouteLoop] | None = None,
+) -> dict[str, Any]:
+    """Insert a ping if Motive's located_at is new; record ETA prediction.
+
+    Returns ``{inserted, ping_id, prediction}``.
+    """
+    empty: dict[str, Any] = {"inserted": False, "ping_id": None, "prediction": None}
     if summary.get("lat") is None or summary.get("lon") is None:
-        return False
+        return empty
     if not summary.get("located_at"):
-        return False
+        return empty
 
     from label_route import CLEAR_MARGIN_M, ON_ROUTE_MAX_M, STICKY_MAX_M
+    from eta_predict import resolve_arrivals
 
     recorded_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     vehicle_key = summary["key"]
+    lat = float(summary["lat"])
+    lon = float(summary["lon"])
+    speed_mph = parse_speed_mph(summary.get("speed"))
+
+    if loops is None:
+        loops = {
+            "express": RouteLoop.from_routes_file("express"),
+            "regular": RouteLoop.from_routes_file("regular"),
+        }
+
     prev = conn.execute(
         """
         SELECT route_key, route_status FROM pings
@@ -383,10 +411,11 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
         prev_route = prev["route_key"]
 
     lab = raw_geometry_label(
-        float(summary["lat"]),
-        float(summary["lon"]),
+        lat,
+        lon,
         vehicle_key=vehicle_key,
         entity_state=summary.get("state"),
+        loops=loops,
     )
     route_key = lab.route_key
     route_status = lab.route_status
@@ -411,6 +440,13 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
         train_ok = True
         reason = "at_lark_inherit"
 
+    s_m = None
+    loop_frac = None
+    if route_key and route_key in loops:
+        proj = loops[route_key].project(lat, lon)
+        s_m = round(proj.s_m, 1)
+        loop_frac = round(proj.loop_frac, 4)
+
     cur = conn.execute(
         """
         INSERT OR IGNORE INTO pings (
@@ -418,8 +454,8 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
             located_at, lat, lon, address, city, entity_state, speed,
             bearing, compass, maps_url,
             route_key, route_status, route_off_m, express_off_m, regular_off_m,
-            train_ok, label_reason
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            train_ok, label_reason, speed_mph, s_m, loop_frac
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             recorded_at,
@@ -428,8 +464,8 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
             summary.get("uuid"),
             summary.get("vehicle_number"),
             summary.get("located_at"),
-            summary.get("lat"),
-            summary.get("lon"),
+            lat,
+            lon,
             summary.get("address"),
             summary.get("city"),
             summary.get("state"),
@@ -444,10 +480,51 @@ def save_ping(conn: sqlite3.Connection, summary: dict[str, Any]) -> bool:
             lab.regular_off_m,
             1 if train_ok else 0,
             reason,
+            speed_mph,
+            s_m,
+            loop_frac,
         ),
     )
+    inserted = cur.rowcount > 0
+    if inserted:
+        ping_id = int(cur.lastrowid)
+    else:
+        row = conn.execute(
+            "SELECT id FROM pings WHERE shuttle_key = ? AND located_at = ?",
+            (vehicle_key, summary.get("located_at")),
+        ).fetchone()
+        ping_id = int(row["id"]) if row else None
+
+    if inserted:
+        pred_info = maybe_record_prediction(
+            conn,
+            ping_id=ping_id,
+            shuttle_key=vehicle_key,
+            route_key=route_key,
+            route_status=route_status,
+            lat=lat,
+            lon=lon,
+            located_at=summary.get("located_at"),
+            entity_state=summary.get("state"),
+            speed_raw=summary.get("speed"),
+            loops=loops,
+        )
+    else:
+        resolved = resolve_arrivals(
+            conn,
+            shuttle_key=vehicle_key,
+            route_key=route_key,
+            lat=lat,
+            lon=lon,
+            located_at=summary.get("located_at"),
+            ping_id=ping_id,
+            loops=loops,
+        )
+        pred_info = {"resolved": resolved, "prediction": None}
+
     conn.commit()
-    return cur.rowcount > 0
+    return {"inserted": inserted, "ping_id": ping_id, "prediction": pred_info}
+
 
 
 def apply_route_labels(
@@ -468,10 +545,22 @@ def apply_route_labels(
     by_id = {r["id"]: r for r in labeled if r.get("id") is not None}
 
     updated = 0
+    loops = {
+        "express": RouteLoop.from_routes_file("express", routes_path),
+        "regular": RouteLoop.from_routes_file("regular", routes_path),
+    }
     for row in rows:
         lab = by_id.get(row["id"])
         if not lab:
             continue
+        speed_mph = parse_speed_mph(row["speed"] if "speed" in row.keys() else None)
+        s_m = None
+        loop_frac = None
+        rk = lab.get("route_key")
+        if rk in loops and row["lat"] is not None and row["lon"] is not None:
+            proj = loops[rk].project(float(row["lat"]), float(row["lon"]))
+            s_m = round(proj.s_m, 1)
+            loop_frac = round(proj.loop_frac, 4)
         conn.execute(
             """
             UPDATE pings SET
@@ -481,7 +570,10 @@ def apply_route_labels(
                 express_off_m = ?,
                 regular_off_m = ?,
                 train_ok = ?,
-                label_reason = ?
+                label_reason = ?,
+                speed_mph = ?,
+                s_m = ?,
+                loop_frac = ?
             WHERE id = ?
             """,
             (
@@ -492,6 +584,9 @@ def apply_route_labels(
                 lab.get("regular_off_m"),
                 lab.get("train_ok", 0),
                 lab.get("reason"),
+                speed_mph,
+                s_m,
+                loop_frac,
                 row["id"],
             ),
         )
@@ -526,17 +621,34 @@ def apply_route_labels(
 
 
 def export_history_payload(conn: sqlite3.Connection) -> dict[str, Any]:
+    ensure_predictions_table(conn)
     rows = [
         dict(r)
         for r in conn.execute(
             """
             SELECT id, recorded_at, shuttle_key, shuttle_name, vehicle_number,
                    located_at, lat, lon, address, city, entity_state, speed,
-                   bearing, compass,
+                   bearing, compass, speed_mph, s_m, loop_frac,
                    route_key, route_status, route_off_m,
                    express_off_m, regular_off_m, train_ok, label_reason
             FROM pings
             ORDER BY located_at ASC, id ASC
+            """
+        )
+    ]
+    predictions = [
+        dict(r)
+        for r in conn.execute(
+            """
+            SELECT id, created_at, ping_id, shuttle_key, route_key, located_at,
+                   lat, lon, s_m, loop_frac, entity_state,
+                   speed_raw_mph, speed_used_mph,
+                   target_stop_key, target_stop_name, along_m, eta_min,
+                   predicted_arrive_at, model_version,
+                   resolved_at, actual_arrive_at, actual_min, error_min,
+                   outcome, resolve_ping_id
+            FROM predictions
+            ORDER BY id ASC
             """
         )
     ]
@@ -549,14 +661,19 @@ def export_history_payload(conn: sqlite3.Connection) -> dict[str, Any]:
         by_route[rk] = by_route.get(rk, 0) + 1
         if r.get("train_ok"):
             train_rows.append(r)
+    arrived = [p for p in predictions if p.get("outcome") == "arrived"]
     return {
         "exported_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "ping_count": len(rows),
         "train_ok_count": len(train_rows),
+        "prediction_count": len(predictions),
+        "arrived_prediction_count": len(arrived),
         "by_shuttle": by_shuttle,
         "by_route": by_route,
         "pings": rows,
         "train_pings": train_rows,
+        "predictions": predictions,
+        "train_predictions": arrived,
     }
 
 
@@ -577,8 +694,17 @@ def cmd_label(args: argparse.Namespace) -> int:
 
     history_path = out_dir / "history.json"
     train_path = out_dir / "train_pings.json"
+    pred_path = out_dir / "predictions.json"
+    train_pred_path = out_dir / "train_predictions.json"
     history_path.write_text(
-        json.dumps({k: v for k, v in payload.items() if k != "train_pings"}, indent=2)
+        json.dumps(
+            {
+                k: v
+                for k, v in payload.items()
+                if k not in ("train_pings", "train_predictions")
+            },
+            indent=2,
+        )
     )
     train_payload = {
         "exported_at": payload["exported_at"],
@@ -598,6 +724,36 @@ def cmd_label(args: argparse.Namespace) -> int:
         train_payload["by_vehicle"][vk] = train_payload["by_vehicle"].get(vk, 0) + 1
     train_path.write_text(json.dumps(train_payload, indent=2))
 
+    pred_path.write_text(
+        json.dumps(
+            {
+                "exported_at": payload["exported_at"],
+                "prediction_count": payload["prediction_count"],
+                "arrived_prediction_count": payload["arrived_prediction_count"],
+                "notes": (
+                    "All ETA predictions logged by the collector. "
+                    "outcome=arrived rows include actual_min and error_min."
+                ),
+                "predictions": payload["predictions"],
+            },
+            indent=2,
+        )
+    )
+    train_pred_path.write_text(
+        json.dumps(
+            {
+                "exported_at": payload["exported_at"],
+                "ping_count": payload["arrived_prediction_count"],
+                "notes": (
+                    "Resolved predictions only (arrived). Features at prediction "
+                    "time + actual_min / error_min for supervised ETA training."
+                ),
+                "predictions": payload["train_predictions"],
+            },
+            indent=2,
+        )
+    )
+
     snap = out_dir / "shuttle_history.db"
     if db_path.resolve() != snap.resolve():
         import shutil
@@ -610,6 +766,11 @@ def cmd_label(args: argparse.Namespace) -> int:
         print(_format_label_report(stats))
     print(f"Wrote {history_path} ({payload['ping_count']} pings)")
     print(f"Wrote {train_path} ({payload['train_ok_count']} train_ok)")
+    print(
+        f"Wrote {pred_path} ({payload['prediction_count']} preds, "
+        f"{payload['arrived_prediction_count']} arrived)"
+    )
+    print(f"Wrote {train_pred_path}")
     return 0
 
 
@@ -726,6 +887,10 @@ def cmd_log(args: argparse.Namespace, shuttles: list[dict[str, str]], api: dict[
     selected = resolve_keys(args.shuttle, shuttles)
     db_path = Path(args.db)
     conn = connect_db(db_path)
+    loops = {
+        "express": RouteLoop.from_routes_file("express"),
+        "regular": RouteLoop.from_routes_file("regular"),
+    }
     interval = args.interval
     print(
         f"Logging {', '.join(s['key'] for s in selected)} every {interval:g}s → {db_path}",
@@ -742,12 +907,26 @@ def cmd_log(args: argparse.Namespace, shuttles: list[dict[str, str]], api: dict[
                 continue
 
             for s in summaries:
-                inserted = save_ping(conn, s)
-                tag = "saved" if inserted else "dup"
+                result = save_ping(conn, s, loops=loops)
+                tag = "saved" if result["inserted"] else "dup"
                 where = s.get("address") or f"{s.get('lat')},{s.get('lon')}"
+                extra = ""
+                pred = (result.get("prediction") or {}).get("prediction") or {}
+                if pred and not pred.get("deduped"):
+                    extra = (
+                        f"  ETA {pred.get('eta_min')}m→{pred.get('target')} "
+                        f"(spd {pred.get('speed_raw_mph')}→{pred.get('speed_used_mph')}mph)"
+                    )
+                resolved = (result.get("prediction") or {}).get("resolved") or []
+                if resolved:
+                    bits = ", ".join(
+                        f"{r['target']} pred={r['eta_min']} act={r['actual_min']} err={r['error_min']}"
+                        for r in resolved
+                    )
+                    extra += f"  resolved[{bits}]"
                 print(
                     f"[{stamp}] {tag:5} {s['key']:8}  {s.get('state') or '?':7}  "
-                    f"{where}  ({s.get('located_at')})",
+                    f"{where}  ({s.get('located_at')}){extra}",
                     flush=True,
                 )
             time.sleep(interval)

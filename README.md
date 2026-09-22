@@ -42,7 +42,12 @@ a bus swaps routes.
 
 `label` marks every ping with `route_key` (passenger loop), `route_status`, and
 `train_ok`. Vehicle identity stays in `shuttle_key`. Use `data/train_pings.json`
-for ETA model training (on-route + trip-context Lark stops only).
+for trajectory features.
+
+The live logger also stores **ETA predictions** (`predictions` table →
+`data/predictions.json`) and, when the bus reaches the target stop, the
+**actual travel time** + error (`data/train_predictions.json`). Display ETA uses
+a clamped cruise speed (min 8 mph) so crawls do not inflate estimates.
 History: live logger writes `shuttle_history.db` (gitignored). Snapshots are
 committed to `data/shuttle_history.db` + `data/history.json` by
 `scripts/push_history.sh` (also runs every 2h via `scripts/push_history_loop.sh`).

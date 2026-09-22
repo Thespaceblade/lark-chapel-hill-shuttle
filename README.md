@@ -12,7 +12,7 @@ npm run dev
 
 Deploy (Root Directory = repository root / leave blank — `package.json` is at the top level):
 
-1. Import https://github.com/Thespaceblade/lark-chapel-hill-shuttle in Vercel
+1. Import https://github.com/thespaceblade/lark-chapel-hill-shuttle in Vercel
 2. Deploy (Motive share key is built-in; optional env override below)
 
 Optional env override **`MOTIVE_WEB_SHARE_API_KEY`** (paste the raw key — no quotes). A wrong value causes Motive `HTTP 403`. Get the current key with `python3 lark_shuttle.py discover`.
@@ -61,3 +61,4 @@ bash scripts/push_history_loop.sh     # every 2 hours
 
 - Motive’s public share API only returns the **current** ping.
 - Share links expire around `2027-07-01`.
+- **Daily roster (Chapel Hill time):** Shuttle 1 runs **Express** until **2:00 PM**, then **Regular**. Shuttle 2 swaps the other way. Motive UUIDs and history `shuttle_key` stay fixed (morning paint); live UI “usual home” remaps in `src/lib/roster.ts`.

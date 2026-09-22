@@ -80,18 +80,16 @@ function busIcon(
   key: ShuttleKey | "oos",
   color: string,
   label: string,
-  showArrow: boolean,
 ) {
-  // Bearing is applied via DOM so CSS can ease the arrow between GPS updates.
-  const arrow = showArrow
-    ? `<div class="${styles.busArrowRing}">
-         <div class="${styles.busArrow}" data-line="${key === "oos" ? "express" : key}"></div>
-       </div>`
-    : "";
+  // Always mount the arrow ring; visibility/rotation is driven via DOM so
+  // CSS-module hashes aren't required inside Leaflet-injected HTML.
+  const line = key === "oos" ? "express" : key;
   return L.divIcon({
     className: styles.busIconWrap,
     html: `<div class="${styles.busMarker}">
-      ${arrow}
+      <div class="lark-bus-arrow-ring" style="opacity:0">
+         <div class="lark-bus-arrow" data-line="${line}"></div>
+       </div>
       <div class="${styles.busIcon}" style="--bus:${color}"><span>${label}</span></div>
     </div>`,
     iconSize: [56, 56],
@@ -234,22 +232,26 @@ function SmoothMarker({
   const startRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const primedRef = useRef(false);
-  const iconPaintRef = useRef(`${lineKey}|${color}|${label}|${showArrow}`);
+  const iconPaintRef = useRef(`${lineKey}|${color}|${label}`);
+  const lastBearingRef = useRef<number | null>(
+    bearing != null && bearing >= 0 ? bearing : null,
+  );
+  const showArrowRef = useRef(showArrow);
+  showArrowRef.current = showArrow;
 
-  const initialIcon = useRef(
-    busIcon(lineKey, color, label, showArrow),
-  ).current;
+  const initialIcon = useRef(busIcon(lineKey, color, label)).current;
 
-  const bearingRef = useRef({ bearing, showArrow });
-  bearingRef.current = { bearing, showArrow };
+  if (bearing != null && Number.isFinite(bearing) && bearing >= 0) {
+    lastBearingRef.current = bearing;
+  }
 
   const applyBearingTo = (marker: L.Marker) => {
     const ring = marker
       .getElement()
-      ?.querySelector(`.${styles.busArrowRing}`) as HTMLElement | null;
+      ?.querySelector(".lark-bus-arrow-ring") as HTMLElement | null;
     if (!ring) return;
-    const { bearing: b, showArrow: show } = bearingRef.current;
-    if (!show || b == null || !Number.isFinite(b) || b < 0) {
+    const b = lastBearingRef.current;
+    if (!showArrowRef.current || b == null || !Number.isFinite(b) || b < 0) {
       ring.style.opacity = "0";
       return;
     }
@@ -262,14 +264,17 @@ function SmoothMarker({
 
   const setMarkerRef = useCallback((marker: L.Marker | null) => {
     markerRef.current = marker;
-    if (!marker || primedRef.current) return;
-    primedRef.current = true;
-    const pos = positionPrimeRef.current;
-    displayRef.current = pos;
-    fromRef.current = pos;
-    toRef.current = pos;
-    marker.setLatLng(pos);
-    applyBearingTo(marker);
+    if (!marker) return;
+    if (!primedRef.current) {
+      primedRef.current = true;
+      const pos = positionPrimeRef.current;
+      displayRef.current = pos;
+      fromRef.current = pos;
+      toRef.current = pos;
+      marker.setLatLng(pos);
+    }
+    // Icon element may not exist until the marker is on the map.
+    requestAnimationFrame(() => applyBearingTo(marker));
   }, []);
 
   // Unmount only — mid-flight retargets must not cancel the RAF loop.
@@ -286,14 +291,17 @@ function SmoothMarker({
   useEffect(() => {
     const marker = markerRef.current;
     if (!marker) return;
-    const paint = `${lineKey}|${color}|${label}|${showArrow}`;
-    if (paint === iconPaintRef.current && primedRef.current) return;
+    const paint = `${lineKey}|${color}|${label}`;
+    if (paint === iconPaintRef.current && primedRef.current) {
+      applyBearingTo(marker);
+      return;
+    }
     iconPaintRef.current = paint;
-    marker.setIcon(busIcon(lineKey, color, label, showArrow));
+    marker.setIcon(busIcon(lineKey, color, label));
     requestAnimationFrame(() => {
       if (markerRef.current) applyBearingTo(markerRef.current);
     });
-  }, [lineKey, color, label, showArrow]);
+  }, [lineKey, color, label]);
 
   // Ease heading via CSS transform on the existing arrow ring.
   useEffect(() => {
@@ -579,11 +587,9 @@ export default function ShuttleMap({
             const paint = v.rideable && service ? SHUTTLES[service] : null;
             const color = paint?.color ?? "#6b7280";
             const label = paint?.bullet ?? "·";
-            const showArrow =
-              v.rideable &&
-              !v.atLark &&
-              v.bearing != null &&
-              v.bearing >= 0;
+            // Keep arrow while rideable off-curb; SmoothMarker holds last heading
+            // when Motive briefly sends a null bearing (e.g. idle / light).
+            const showArrow = v.rideable && !v.atLark;
             return (
               <SmoothMarker
                 key={`fleet-${v.homeKey}`}
@@ -616,8 +622,7 @@ export default function ShuttleMap({
           const s = m.s;
           if (s.lat == null || s.lon == null) return null;
           const meta = SHUTTLES[s.key];
-          const showArrow =
-            s.rideable && !s.atLark && s.bearing != null && s.bearing >= 0;
+          const showArrow = s.rideable && !s.atLark;
           return (
             <SmoothMarker
               key={s.key}

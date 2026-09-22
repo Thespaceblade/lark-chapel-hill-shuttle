@@ -17,10 +17,55 @@ DEFAULT_ROUTES = Path(__file__).resolve().parent / "intended_routes.json"
 DEFAULT_ASSIGNMENT = Path(__file__).resolve().parent / "data" / "route_assignment.json"
 EARTH_M = 6_371_000.0
 ROUTE_CANDIDATES = ("express", "regular")
+VEHICLE_KEYS = ("1", "2")
 # Prefer a loop when median off is clearly better by this much (meters).
 AUTO_MARGIN_M = 25.0
 # Treat a ping as "on" a loop when offset ≤ this (matches web ON_ROUTE_MAX_M).
 ON_ROUTE_MAX_M = 90.0
+# Soft morning home when no clock is available (matches roster before 2 PM ET).
+_VEHICLE_HOME_MORNING = {"1": "express", "2": "regular"}
+# Legacy assignment / CLI aliases: express/regular used to mean vehicles.
+_VEHICLE_ALIASES = {
+    "1": "1",
+    "shuttle1": "1",
+    "express": "1",
+    "2": "2",
+    "shuttle2": "2",
+    "regular": "2",
+}
+
+
+def normalize_vehicle_key(key: str | None) -> str | None:
+    """Map CLI/legacy names to Motive vehicle ids ``1`` / ``2``."""
+    if key is None:
+        return None
+    raw = str(key).lower().strip()
+    return _VEHICLE_ALIASES.get(raw, raw)
+
+
+def normalize_route_key(key: str | None) -> str | None:
+    """Map a value to ``express`` / ``regular`` (never a vehicle id)."""
+    if key is None:
+        return None
+    raw = str(key).lower().strip()
+    if raw in ROUTE_CANDIDATES:
+        return raw
+    if raw in ("auto", ""):
+        return raw
+    # Accidental vehicle id → soft morning home (not a pin).
+    if raw in _VEHICLE_HOME_MORNING:
+        return _VEHICLE_HOME_MORNING[raw]
+    return raw
+
+
+def home_route_for_vehicle(vehicle_key: str) -> str:
+    """Soft usual passenger loop for a Motive vehicle (morning default)."""
+    vk = normalize_vehicle_key(vehicle_key) or vehicle_key
+    if vk in _VEHICLE_HOME_MORNING:
+        return _VEHICLE_HOME_MORNING[vk]
+    if vk in ROUTE_CANDIDATES:
+        return vk
+    return "regular"
 
 
 def load_route_assignment(path: Path | None = None) -> dict[str, Any]:
@@ -30,9 +75,16 @@ def load_route_assignment(path: Path | None = None) -> dict[str, Any]:
         return {"mode": "auto", "vehicle_to_route": {}}
     data = json.loads(path.read_text())
     mapping = data.get("vehicle_to_route") or {}
+    clean: dict[str, str] = {}
+    for k, v in mapping.items():
+        vk = normalize_vehicle_key(str(k)) or str(k)
+        rv = str(v).lower().strip()
+        if rv not in ("auto", ""):
+            rv = normalize_route_key(rv) or rv
+        clean[vk] = rv
     return {
         "mode": str(data.get("mode") or "auto").lower(),
-        "vehicle_to_route": {str(k): str(v) for k, v in mapping.items()},
+        "vehicle_to_route": clean,
         "notes": data.get("notes"),
         "updated_at": data.get("updated_at"),
     }
@@ -47,6 +99,7 @@ def infer_route_from_pings(
 ) -> tuple[str, dict[str, Any]]:
     """Pick loop geometry from GPS fit. Returns (route_key, diagnostics)."""
     routes_path = routes_path or DEFAULT_ROUTES
+    home = home_route_for_vehicle(vehicle_key)
     usable = [
         p
         for p in pings
@@ -56,11 +109,12 @@ def infer_route_from_pings(
         "mode": "auto",
         "ping_count": len(usable),
         "fits": {},
+        "home_route": home,
         "reason": None,
     }
     if not usable:
         diag["reason"] = "no_pings_default_home"
-        return vehicle_key, diag
+        return home, diag
 
     fits: dict[str, dict[str, float]] = {}
     for key in ROUTE_CANDIDATES:
@@ -97,8 +151,8 @@ def infer_route_from_pings(
         diag["reason"] = f"clearer_on_frac:{best}"
         return best, diag
 
-    home_m = fits.get(vehicle_key, {}).get("median_off_m", float("inf"))
-    home_on = fits.get(vehicle_key, {}).get("on_route_frac", 0.0)
+    home_m = fits.get(home, {}).get("median_off_m", float("inf"))
+    home_on = fits.get(home, {}).get("on_route_frac", 0.0)
 
     # Home paint is not actually on its loop — take the closer service.
     if home_m > ON_ROUTE_MAX_M or home_on < 0.5:
@@ -108,7 +162,7 @@ def infer_route_from_pings(
     # Ambiguous shared corridor / Lark: prefer usual role.
     if home_m <= ON_ROUTE_MAX_M * 1.5:
         diag["reason"] = "ambiguous_prefer_home"
-        return vehicle_key, diag
+        return home, diag
 
     diag["reason"] = f"ambiguous_prefer_closer:{best}"
     return best, diag
@@ -125,28 +179,29 @@ def resolve_route_key(
     """Which intended_routes geometry to use for this Motive vehicle.
 
     Priority: ``--on-route`` override → static map value (if not auto) →
-    GPS auto-infer from ``pings`` → vehicle home key.
+    GPS auto-infer from ``pings`` → soft vehicle home route.
     """
+    vk = normalize_vehicle_key(vehicle_key) or vehicle_key
     if on_route:
-        return on_route, {"mode": "override", "reason": "cli_on_route"}
+        rk = normalize_route_key(on_route) or on_route
+        return rk, {"mode": "override", "reason": "cli_on_route"}
 
     cfg = load_route_assignment(assignment_path)
-    mapped = (cfg.get("vehicle_to_route") or {}).get(vehicle_key)
-    # Explicit fixed mapping wins over auto (e.g. "express": "regular").
+    mapped = (cfg.get("vehicle_to_route") or {}).get(vk)
+    # Explicit fixed mapping wins over auto (e.g. "1": "regular").
     if mapped and mapped.lower() not in ("auto", ""):
-        return mapped, {
+        rk = normalize_route_key(mapped) or mapped
+        return rk, {
             "mode": "static",
-            "reason": f"assignment:{vehicle_key}->{mapped}",
+            "reason": f"assignment:{vk}->{rk}",
         }
 
     mode = cfg.get("mode") or "auto"
     if mode == "auto" and pings is not None:
-        return infer_route_from_pings(
-            vehicle_key, pings, routes_path=routes_path
-        )
+        return infer_route_from_pings(vk, pings, routes_path=routes_path)
 
-    # auto with no pings, or mode=home / unknown → identity
-    return vehicle_key, {
+    home = home_route_for_vehicle(vk)
+    return home, {
         "mode": mode if mode != "auto" else "home",
         "reason": "default_home",
     }

@@ -18,6 +18,8 @@ ETA_FALLBACK_MPH = 12.0
 ETA_MIN_MPH = 8.0
 ETA_MAX_MPH = 28.0
 ETA_MAX_MINUTES = 40.0
+# Arrivals slower than this are a later lap / stale open pred — not a valid outcome.
+MAX_ARRIVAL_AGE_MIN = ETA_MAX_MINUTES + 10.0
 AT_STOP_ARRIVE_M = 45.0
 MODEL_VERSION = "eta_clamp_v1"
 
@@ -273,6 +275,19 @@ def resolve_arrivals(
         actual_min = (located - pred_at).total_seconds() / 60.0
         if actual_min < 0:
             actual_min = 0.0
+        # Stale open prediction (idle / later lap) — not a real arrival outcome.
+        if actual_min > MAX_ARRIVAL_AGE_MIN:
+            conn.execute(
+                """
+                UPDATE predictions SET
+                    resolved_at = ?, outcome = 'superseded',
+                    actual_arrive_at = NULL, actual_min = NULL, error_min = NULL,
+                    resolve_ping_id = ?
+                WHERE id = ?
+                """,
+                (iso_utc(), ping_id, row["id"]),
+            )
+            continue
         # Ignore instant "arrivals" (already there when predicted).
         if actual_min < 0.25 and (row["along_m"] or 0) > 80:
             continue
@@ -387,8 +402,10 @@ def maybe_record_prediction(
         return {"resolved": resolved, "prediction": None}
 
     if route_status not in ("on_route", "at_lark"):
+        # Off-network / lot / unknown — close every open pred (do not leave
+        # Memorial Hall ETAs hanging for a later lap to falsely "arrive").
         supersede_stale(
-            conn, shuttle_key=shuttle_key, current_target_key=None, route_key=route_key
+            conn, shuttle_key=shuttle_key, current_target_key=None, route_key=None
         )
         return {"resolved": resolved, "prediction": None}
 

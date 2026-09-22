@@ -1,0 +1,156 @@
+.shell {
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.mapSkeleton {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, #1d3a2c, transparent 45%),
+    linear-gradient(160deg, #0f1a14, #173024 50%, #0c1410);
+}
+
+.panel {
+  position: absolute;
+  z-index: 500;
+  top: 1rem;
+  left: 1rem;
+  width: min(420px, calc(100vw - 2rem));
+  padding: 1.15rem 1.25rem 1rem;
+  border-radius: 18px;
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brand {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2.6rem, 8vw, 3.4rem);
+  font-weight: 650;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+
+.tag {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.toggles {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.toggle,
+.toggleOn {
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.toggleOn {
+  background: var(--accent);
+  color: #142018;
+  border-color: transparent;
+}
+
+.cards {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.card {
+  border-left: 3px solid var(--bus);
+  padding: 0.55rem 0.7rem 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 0 12px 12px 0;
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.cardHead h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.state {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: lowercase;
+}
+
+.where {
+  margin: 0.25rem 0 0.2rem;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.next {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.next strong {
+  font-weight: 700;
+}
+
+.meta {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.error {
+  margin: 0.75rem 0 0;
+  color: #ffb4a2;
+  font-size: 0.85rem;
+}
+
+.footer {
+  margin: 0.85rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+    max-height: 52dvh;
+    overflow: auto;
+  }
+
+  .brand {
+    font-size: 2.3rem;
+  }
+}

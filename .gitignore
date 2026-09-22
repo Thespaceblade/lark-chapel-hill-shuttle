@@ -1,9 +1,16 @@
-# Runtime / local
-shuttle_history.db
+# Dependencies / caches
+node_modules/
+web/node_modules/
+web/.next/
+web/.vercel/
 __pycache__/
 *.pyc
 .DS_Store
 .env
+.env*.local
+
+# Runtime data
+shuttle_history.db
 
 # Large generated map screenshots (HTML maps are enough)
 *.png

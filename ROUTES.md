@@ -9,7 +9,7 @@ KMZ direction waypoints are ignored; only the LineString path is used.
 Lark → Memorial Hall (with campus loop as drawn in My Maps) → Lark
 
 ## Regular
-Lark → Memorial Hall → Student Union → Business school → Sitterson → Lark
+Lark → Memorial Hall → Student Union → Business school → Health Sciences Library → Sitterson → Lark
 
 ## Daily vehicle roster (America/New_York)
 

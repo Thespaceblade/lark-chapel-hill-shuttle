@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { LiveShuttle, ShuttleKey } from "@/lib/shuttles";
 import { SHUTTLES } from "@/lib/shuttles";
+import {
+  LARK_DEPARTURE_GRACE_MIN,
+  larkHoldBoard,
+  type LarkScheduleSnapshot,
+} from "@/lib/schedule";
 import styles from "./page.module.css";
 
 const ShuttleMap = dynamic(() => import("@/components/ShuttleMap"), {
@@ -45,6 +50,57 @@ function statusWord(state: string | null | undefined): string {
   return s || "unknown";
 }
 
+type BoardView = {
+  label: string;
+  name: string;
+  etaMin: number | null;
+  detail: string | null;
+};
+
+function boardForShuttle(
+  s: LiveShuttle | undefined,
+  holdSlotMin: number | null,
+): BoardView {
+  if (!s) {
+    return { label: "Next stop", name: "—", etaMin: null, detail: null };
+  }
+
+  if (s.atLark && s.larkSchedule) {
+    const snap = s.larkSchedule as LarkScheduleSnapshot;
+    const hold = larkHoldBoard(snap, holdSlotMin);
+    if (hold.mode === "lark_unscheduled") {
+      return {
+        label: "At Lark",
+        name: "Lark Chapel Hill",
+        etaMin: null,
+        detail: "Departure time unknown",
+      };
+    }
+    return {
+      label: hold.mode === "departing_lark_now" ? "Departing" : "Departing Lark",
+      name: "Lark Chapel Hill",
+      etaMin: hold.etaMin,
+      detail: hold.departAtLabel
+        ? `Scheduled ${hold.departAtLabel} · every ${hold.headwayMin} min`
+        : `Every ${hold.headwayMin} min`,
+    };
+  }
+
+  if (s.nextStop) {
+    return {
+      label: "Next stop",
+      name: s.nextStop.name,
+      etaMin:
+        s.nextStop.etaMin != null
+          ? Math.max(0, Math.round(s.nextStop.etaMin))
+          : null,
+      detail: null,
+    };
+  }
+
+  return { label: "Next stop", name: "—", etaMin: null, detail: null };
+}
+
 function LineBullet({
   line,
   size = "md",
@@ -70,6 +126,12 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [focus, setFocus] = useState<ShuttleKey | "both">("both");
   const [tick, setTick] = useState(0);
+  /** Slot (minutes from midnight) each shuttle started holding for at Lark. */
+  const holdSlots = useRef<Partial<Record<ShuttleKey, number | null>>>({
+    express: null,
+    regular: null,
+  });
+  const [, setHoldEpoch] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,8 +156,32 @@ export default function HomePage() {
         const data = (await res.json()) as LiveResponse;
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         if (!cancelled) {
+          let holdChanged = false;
+          for (const s of data.shuttles) {
+            const prev = holdSlots.current[s.key] ?? null;
+            if (!s.atLark) {
+              if (prev != null) {
+                holdSlots.current[s.key] = null;
+                holdChanged = true;
+              }
+              continue;
+            }
+            if (prev == null && s.larkSchedule) {
+              // First sample inside Lark: hold for the upcoming clock slot,
+              // unless we're inside the grace window of the slot that just
+              // passed (departing now).
+              const snap = s.larkSchedule;
+              const target =
+                snap.minutesSincePrev <= LARK_DEPARTURE_GRACE_MIN
+                  ? snap.prevSlotMin
+                  : snap.nextSlotMin;
+              holdSlots.current[s.key] = target;
+              holdChanged = true;
+            }
+          }
           setLive(data);
           setError(null);
+          if (holdChanged) setHoldEpoch((n) => n + 1);
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
@@ -126,6 +212,7 @@ export default function HomePage() {
           routes={routes}
           shuttles={live?.shuttles ?? []}
           focus={focus}
+          holdSlots={holdSlots.current}
         />
       </div>
 
@@ -177,10 +264,7 @@ export default function HomePage() {
           {(["express", "regular"] as ShuttleKey[]).map((key) => {
             if (focus !== "both" && focus !== key) return null;
             const s = byKey.get(key);
-            const eta =
-              s?.nextStop?.etaMin != null
-                ? Math.max(0, Math.round(s.nextStop.etaMin))
-                : null;
+            const board = boardForShuttle(s, holdSlots.current[key] ?? null);
             return (
               <section key={key} className={styles.roll}>
                 <div className={styles.rollHead}>
@@ -189,35 +273,42 @@ export default function HomePage() {
                     <h2>{SHUTTLES[key].name.toUpperCase()}</h2>
                     <p className={styles.toward}>
                       {key === "express"
-                        ? "to Memorial Hall / Lark"
-                        : "to Union · Deck · Sitterson · Lark"}
+                        ? "every 15 min from Lark"
+                        : "every 30 min from Lark"}
                     </p>
                   </div>
                   <div
                     className={styles.liveTag}
-                    data-state={(s?.state || "").toLowerCase()}
+                    data-state={
+                      s?.atLark ? "idling" : (s?.state || "").toLowerCase()
+                    }
                   >
-                    {statusWord(s?.state)}
+                    {s?.atLark ? "at Lark" : statusWord(s?.state)}
                   </div>
                 </div>
 
                 <div className={styles.nextBlock}>
-                  <div className={styles.nextLabel}>Next stop</div>
+                  <div className={styles.nextLabel}>{board.label}</div>
                   <div className={styles.nextRow}>
-                    <div className={styles.nextName}>
-                      {s?.nextStop?.name ?? "—"}
-                    </div>
+                    <div className={styles.nextName}>{board.name}</div>
                     <div className={styles.eta}>
-                      {eta != null ? (
+                      {board.etaMin != null ? (
                         <>
-                          <span className={styles.etaNum}>{eta}</span>
+                          <span className={styles.etaNum}>{board.etaMin}</span>
                           <span className={styles.etaUnit}>min</span>
                         </>
                       ) : (
-                        <span className={styles.etaUnit}>—</span>
+                        <span className={styles.etaUnit}>
+                          {s?.atLark ? "TBD" : "—"}
+                        </span>
                       )}
                     </div>
                   </div>
+                  {board.detail ? (
+                    <div className={styles.metaValue} style={{ marginTop: 6 }}>
+                      {board.detail}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className={styles.metaGrid}>

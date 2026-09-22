@@ -13,14 +13,13 @@ npm run dev
 Deploy (Root Directory = repository root / leave blank — `package.json` is at the top level):
 
 1. Import https://github.com/Thespaceblade/lark-chapel-hill-shuttle in Vercel
-2. Add env var **`MOTIVE_WEB_SHARE_API_KEY`**
-3. Deploy
+2. Deploy (Motive share key is built-in; optional env override below)
 
-Local secret:
+Optional env override **`MOTIVE_WEB_SHARE_API_KEY`** (paste the raw key — no quotes). A wrong value causes Motive `HTTP 403`. Get the current key with `python3 lark_shuttle.py discover`.
 
 ```bash
 cp .env.example .env.local
-# paste Motive X-Web-Share-Api-Key
+# optional: MOTIVE_WEB_SHARE_API_KEY=...
 ```
 
 The site polls `/api/live` every 1s, draws intended loops, and shows next-stop ETA.

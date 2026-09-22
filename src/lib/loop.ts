@@ -182,7 +182,7 @@ export class RouteLoop {
       }
       const d2 = (p.x - qx) ** 2 + (p.y - qy) ** 2;
       let score = d2;
-      if (bearingDeg != null && Number.isFinite(bearingDeg) && seg2 > 1e-6) {
+      if (bearingDeg != null && Number.isFinite(bearingDeg) && bearingDeg >= 0 && seg2 > 1e-6) {
         const segBrg = segmentBearingDeg(a.x, a.y, b.x, b.y);
         const diff = bearingDiffDeg(segBrg, bearingDeg);
         // ~30 m penalty at opposite heading — breaks outbound/return ties.

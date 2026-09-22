@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-09-18T22:28:07Z",
+  "generated_at": "2026-09-22T14:20:28Z",
   "express": {
     "stops": [
       {
         "key": "lark",
         "name": "Lark Chapel Hill",
-        "lat": 35.919,
-        "lon": -79.05419
+        "lat": 35.91913,
+        "lon": -79.05343
       },
       {
         "key": "memorial",
         "name": "Memorial Hall",
-        "lat": 35.9111,
-        "lon": -79.05198
+        "lat": 35.91147,
+        "lon": -79.05222
       }
     ],
     "line": [
@@ -675,32 +675,32 @@
       {
         "key": "lark",
         "name": "Lark Chapel Hill",
-        "lat": 35.919,
-        "lon": -79.05419
+        "lat": 35.91913,
+        "lon": -79.05343
       },
       {
         "key": "memorial",
         "name": "Memorial Hall",
-        "lat": 35.9111,
-        "lon": -79.05198
+        "lat": 35.91147,
+        "lon": -79.05222
       },
       {
         "key": "carolina_union",
-        "name": "Carolina Union",
-        "lat": 35.91039,
-        "lon": -79.04748
+        "name": "Student Union",
+        "lat": 35.90982,
+        "lon": -79.04754
       },
       {
         "key": "bschool_deck",
-        "name": "B-school parking deck entrance",
-        "lat": 35.9009,
-        "lon": -79.0445
+        "name": "Business school",
+        "lat": 35.90108,
+        "lon": -79.04623
       },
       {
         "key": "sitterson",
-        "name": "CS school (Sitterson)",
-        "lat": 35.9097939,
-        "lon": -79.0536795
+        "name": "Sitterson",
+        "lat": 35.90995,
+        "lon": -79.05373
       }
     ],
     "line": [

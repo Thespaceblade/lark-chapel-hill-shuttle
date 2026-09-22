@@ -1,7 +1,7 @@
 # Intended Lark shuttle routes (from resident description)
 
-Stop coordinates are geocoded approximations. Road geometry uses OSM centerlines
-(Stadium / Ridge / South Columbia) plus OSRM for Manning and the Lark–campus connectors.
+Stop coordinates are resident-provided GPS pins (updated 2026-09-22).
+Road geometry (`line`) still needs manual cleanup to match curb drop-offs.
 
 ## Express
 Lark ↔ Memorial Hall only (MLK / Columbia).

@@ -2,12 +2,15 @@ import type { ShuttleKey } from "./shuttles";
 import { chapelHillMinutesOfDay } from "./schedule";
 
 /**
- * Physical Motive vehicles (UUID slots), not passenger services.
- * Shuttle 1 = morning Express share; Shuttle 2 = morning Regular share.
+ * Physical Motive vehicles (bus numbers), not passenger services.
+ * Vehicle 1 = Lark Chapel Hill 1 share UUID; Vehicle 2 = Lark Chapel Hill 2.
  */
-export type VehicleId = "shuttle1" | "shuttle2";
+export type VehicleKey = "1" | "2";
 
-/** Chapel Hill local time when Shuttle 1 switches Express → Regular (and 2 swaps). */
+/** @deprecated Prefer VehicleKey */
+export type VehicleId = VehicleKey;
+
+/** Chapel Hill local time when assigned "usual" services swap. */
 export const ROSTER_SWAP_MINUTE = 14 * 60; // 2:00 PM
 
 export function rosterSwapped(now: Date = new Date()): boolean {
@@ -15,30 +18,38 @@ export function rosterSwapped(now: Date = new Date()): boolean {
 }
 
 /**
- * Usual passenger service for a physical bus.
+ * Soft "usual" passenger service for a physical bus (schedule hint only).
+ * Actual service is inferred from GPS. Either bus may run either route.
  *
- * Morning: Shuttle 1 → Express, Shuttle 2 → Regular
- * From 2:00 PM ET: Shuttle 1 → Regular, Shuttle 2 → Express
+ * Morning: 1 → Express, 2 → Regular
+ * From 2:00 PM ET: 1 → Regular, 2 → Express
  */
 export function homeServiceForVehicle(
-  vehicleId: VehicleId,
+  vehicleKey: VehicleKey,
   now: Date = new Date(),
 ): ShuttleKey {
   const swapped = rosterSwapped(now);
-  if (vehicleId === "shuttle1") return swapped ? "regular" : "express";
+  if (vehicleKey === "1") return swapped ? "regular" : "express";
   return swapped ? "express" : "regular";
 }
 
-/** Motive share key used at boot (morning paint) → physical vehicle id. */
-export function vehicleIdFromShareSlot(shareSlot: ShuttleKey): VehicleId {
-  return shareSlot === "express" ? "shuttle1" : "shuttle2";
+export function vehicleLabel(key: VehicleKey): string {
+  return key === "1" ? "Shuttle 1" : "Shuttle 2";
 }
 
-export function vehicleIdForHome(
+/** @deprecated Share slots are no longer how we key vehicles. */
+export function vehicleIdFromShareSlot(shareSlot: ShuttleKey): VehicleKey {
+  return shareSlot === "express" ? "1" : "2";
+}
+
+export function vehicleKeyForHome(
   home: ShuttleKey,
   now: Date = new Date(),
-): VehicleId {
+): VehicleKey {
   const swapped = rosterSwapped(now);
-  if (home === "express") return swapped ? "shuttle2" : "shuttle1";
-  return swapped ? "shuttle1" : "shuttle2";
+  if (home === "express") return swapped ? "2" : "1";
+  return swapped ? "1" : "2";
 }
+
+/** @deprecated Prefer vehicleKeyForHome */
+export const vehicleIdForHome = vehicleKeyForHome;

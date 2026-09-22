@@ -1,13 +1,15 @@
-# Intended Lark shuttle routes (from resident description)
+# Intended Lark shuttle routes
 
-Stop coordinates are resident-provided GPS pins (updated 2026-09-22).
-Road geometry (`line`) still needs manual cleanup to match curb drop-offs.
+Stop coordinates are resident-provided GPS pins.
+Route polylines were imported from Google My Maps KMZ exports
+(`routes_from_maps/express.kmz`, `routes_from_maps/regular.kmz`).
+KMZ direction waypoints are ignored; only the LineString path is used.
 
 ## Express
-Lark ↔ Memorial Hall only (MLK / Columbia).
+Lark → Memorial Hall (with campus loop as drawn in My Maps) → Lark
 
-## Regular (5 stops)
-Lark → Memorial Hall → Carolina Union → Stadium Drive → Ridge Road →
-B-school parking deck entrance → Manning Drive → South Columbia (Sitterson) → Lark
+## Regular
+Lark → Memorial Hall → Student Union → Business school → Sitterson → Lark
 
-Machine-readable: `intended_routes.json` · maps: `route_map_regular.html`, `route_map_express.html`
+Preview: `kmz_routes_preview.html`
+Machine-readable: `data/intended_routes.json`

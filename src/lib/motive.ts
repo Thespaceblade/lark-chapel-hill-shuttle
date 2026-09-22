@@ -96,7 +96,8 @@ export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
 
   if (lat != null && lon != null) {
     const loop = getLoop(key);
-    const proj = loop.project(lat, lon);
+    // Bearing disambiguates overlapping outbound/return geometry (e.g. past Memorial).
+    const proj = loop.project(lat, lon, bearing);
     loopFrac = proj.loopFrac;
     offLoopM = Math.round(proj.offsetM * 10) / 10;
     const nxt = loop.nextStop(proj);

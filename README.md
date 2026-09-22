@@ -16,7 +16,15 @@ Deploy:
 
 1. Import https://github.com/Thespaceblade/lark-chapel-hill-shuttle in Vercel
 2. Set **Root Directory** to `web`
-3. Framework: Next.js (auto) · Deploy
+3. Add env var **`MOTIVE_WEB_SHARE_API_KEY`** (Project → Settings → Environment Variables)
+4. Framework: Next.js (auto) · Deploy
+
+Local secret (same name):
+
+```bash
+cp web/.env.example web/.env.local
+# paste your Motive X-Web-Share-Api-Key value
+```
 
 The site polls `/api/live` every 1s (server → Motive), draws intended loops, and
 shows a crude next-stop ETA from loop distance ÷ speed.

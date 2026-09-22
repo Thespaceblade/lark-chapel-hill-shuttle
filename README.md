@@ -30,13 +30,14 @@ The site polls `/api/live` every 1s, draws intended loops, and shows next-stop E
 python3 lark_shuttle.py
 python3 lark_shuttle.py log --interval 10
 python3 lark_shuttle.py history express --hours 6
-python3 lark_shuttle.py match express          # uses data/route_assignment.json
+python3 lark_shuttle.py match express          # auto: GPS fit → express or regular loop
 python3 lark_shuttle.py match express --on-route regular
 python3 lark_shuttle.py match regular
 ```
 
 `match` loads pings by Motive vehicle (`shuttle_key`) and projects them onto the
-assigned route geometry. Express-on-regular does **not** require migrating history.
+auto-inferred (or overridden) route geometry. No history migration needed when
+a bus swaps routes.
 History: live logger writes `shuttle_history.db` (gitignored). Snapshots are
 committed to `data/shuttle_history.db` + `data/history.json` by
 `scripts/push_history.sh` (also runs every 2h via `scripts/push_history_loop.sh`).

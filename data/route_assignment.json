@@ -1,8 +1,9 @@
 {
-  "updated_at": "2026-09-22T16:30:00Z",
-  "notes": "Maps each Motive vehicle (tracker) to which intended route geometry to use for matching / next-stop. Vehicle identity stays in shuttle_key; do not rewrite history.",
+  "updated_at": "2026-09-22T16:40:00Z",
+  "mode": "auto",
+  "notes": "mode=auto: infer which loop each Motive vehicle is running from GPS fit (same idea as the web UI). vehicle_to_route may pin a vehicle (e.g. express→regular) or use auto. Never rewrite shuttle_key in history.",
   "vehicle_to_route": {
-    "express": "regular",
-    "regular": "regular"
+    "express": "auto",
+    "regular": "auto"
   }
 }

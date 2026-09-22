@@ -2,18 +2,20 @@ import {
   MOTIVE,
   MOTIVE_PUBLIC_WEB_SHARE_API_KEY,
   SHUTTLES,
+  VEHICLES,
   getMotiveApiKey,
   normalizeMotiveApiKey,
   type FleetVehicle,
   type LiveShuttle,
   type ShuttleKey,
+  type VehicleKey,
 } from "./shuttles";
 import { RouteLoop, etaMinutes, parseSpeedMph } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
 import { isAtLark, larkScheduleSnapshot, distanceM, AT_STOP_RADIUS_M } from "./schedule";
 import { assignServices, classifyVehicle } from "./service";
-import { homeServiceForVehicle, vehicleIdFromShareSlot } from "./roster";
+import { homeServiceForVehicle } from "./roster";
 
 type MotivePayload = {
   live_share?: {
@@ -35,6 +37,7 @@ type MotivePayload = {
 };
 
 type RawVehicle = {
+  vehicleKey: VehicleKey;
   homeKey: ShuttleKey;
   vehicleNumber: string | null;
   state: string | null;
@@ -49,10 +52,9 @@ type RawVehicle = {
 };
 
 function getLoop(key: ShuttleKey): RouteLoop {
-  const route = routesData[key] as {
-    line: [number, number][];
-    stops: Stop[];
-  };
+  const route = (routesData as Record<string, { line: [number, number][]; stops: Stop[] }>)[
+    key
+  ];
   return new RouteLoop(key, route.line, route.stops, true);
 }
 
@@ -92,10 +94,8 @@ async function fetchMotive(uuid: string): Promise<MotivePayload> {
   return (await res.json()) as MotivePayload;
 }
 
-async function fetchRawVehicle(shareSlot: ShuttleKey): Promise<RawVehicle> {
-  // shareSlot selects the Motive UUID (morning paint). homeKey follows the
-  // daily roster (Shuttle 1 → Regular from 2 PM ET).
-  const meta = SHUTTLES[shareSlot];
+async function fetchRawVehicle(vehicleKey: VehicleKey): Promise<RawVehicle> {
+  const meta = VEHICLES[vehicleKey];
   const payload = await fetchMotive(meta.uuid);
   const vehicle = payload.live_share?.vehicle;
   const loc = vehicle?.vehicle_location;
@@ -105,9 +105,9 @@ async function fetchRawVehicle(shareSlot: ShuttleKey): Promise<RawVehicle> {
       : typeof loc.speed === "number"
         ? `${loc.speed} mph`
         : String(loc.speed);
-  const homeKey = homeServiceForVehicle(vehicleIdFromShareSlot(shareSlot));
   return {
-    homeKey,
+    vehicleKey,
+    homeKey: homeServiceForVehicle(vehicleKey),
     vehicleNumber: vehicle?.number ?? null,
     state: loc?.entity_state ?? null,
     speed,
@@ -126,6 +126,7 @@ function emptyService(key: ShuttleKey): LiveShuttle {
     key,
     name: SHUTTLES[key].name,
     vehicleNumber: null,
+    vehicleKey: null,
     vehicleHome: null,
     state: null,
     speed: null,
@@ -143,7 +144,6 @@ function emptyService(key: ShuttleKey): LiveShuttle {
     serviceStatus: "no_bus",
     divertedTo: null,
     assignmentNote: null,
-    // No schedule → UI must not show a departure countdown.
     larkSchedule: null,
     loopFrac: null,
     offLoopM: null,
@@ -162,6 +162,7 @@ function outOfServiceBoard(
     key,
     name: SHUTTLES[key].name,
     vehicleNumber: raw.vehicleNumber,
+    vehicleKey: raw.vehicleKey,
     vehicleHome: raw.homeKey,
     state: raw.state,
     speed: raw.speed,
@@ -182,7 +183,6 @@ function outOfServiceBoard(
     serviceStatus: "out_of_service",
     divertedTo: null,
     assignmentNote: reason ?? "Not in service",
-    // Parked/fueling: never show Lark departure timers.
     larkSchedule: null,
     loopFrac: null,
     offLoopM: null,
@@ -252,6 +252,7 @@ function buildServiceShuttle(
     key: diverted ? opts!.divertedFrom! : service,
     name: SHUTTLES[diverted ? opts!.divertedFrom! : service].name,
     vehicleNumber: raw.vehicleNumber,
+    vehicleKey: raw.vehicleKey,
     vehicleHome: raw.homeKey,
     state: raw.state,
     speed: raw.speed,
@@ -272,7 +273,6 @@ function buildServiceShuttle(
     serviceStatus: diverted ? "diverted" : "active",
     divertedTo: diverted ? service : null,
     assignmentNote: note,
-    // Only the active service board owns schedule / next-stop countdowns.
     larkSchedule: diverted
       ? null
       : {
@@ -305,13 +305,13 @@ export async function fetchLiveBoard(): Promise<{
   };
 
   const raws = await Promise.all([
-    fetchRawVehicle("express"),
-    fetchRawVehicle("regular"),
+    fetchRawVehicle("1"),
+    fetchRawVehicle("2"),
   ]);
 
   const inferred = raws.map((raw) =>
     classifyVehicle({
-      homeKey: raw.homeKey,
+      vehicleKey: raw.vehicleKey,
       lat: raw.lat,
       lon: raw.lon,
       state: raw.state,
@@ -321,40 +321,38 @@ export async function fetchLiveBoard(): Promise<{
   );
 
   const assignment = assignServices(inferred);
-  const byHome = new Map(raws.map((r) => [r.homeKey, r]));
-  const inferredByHome = new Map(inferred.map((v) => [v.homeKey, v]));
+  const byVehicle = new Map(raws.map((r) => [r.vehicleKey, r]));
+  const inferredByVehicle = new Map(
+    inferred.map((v) => [v.vehicleKey, v]),
+  );
 
   const shuttles: LiveShuttle[] = (["express", "regular"] as ShuttleKey[]).map(
     (service) => {
       const pick = assignment[service];
       if (pick) {
-        const raw = byHome.get(pick.homeKey);
+        const raw = byVehicle.get(pick.vehicleKey);
         if (!raw) return emptyService(service);
         return buildServiceShuttle(service, raw, pick.statusReason);
       }
 
-      // No bus assigned to this service — check the usual vehicle.
-      const homeInf = inferredByHome.get(service);
-      const homeRaw = byHome.get(service);
+      // Soft roster: which vehicle is "usually" this service today?
+      const usualVehicle: VehicleKey =
+        homeServiceForVehicle("1") === service ? "1" : "2";
+      const homeInf = inferredByVehicle.get(usualVehicle);
+      const homeRaw = byVehicle.get(usualVehicle);
       if (!homeInf || !homeRaw) return emptyService(service);
 
-      // Usual bus is covering the other line: mark diverted (not rideable)
-      // without copying the other line's next-stop / departure ETA.
       if (
         homeInf.status === "in_service" &&
         homeInf.inferredService &&
         homeInf.inferredService !== service
       ) {
         const other = homeInf.inferredService;
-        const note =
-          homeInf.statusReason ??
-          `Usually ${SHUTTLES[service].name} · running ${SHUTTLES[other].name}`;
-        return buildServiceShuttle(other, homeRaw, note, {
+        return buildServiceShuttle(other, homeRaw, homeInf.statusReason, {
           divertedFrom: service,
         });
       }
 
-      // Usual bus is parked / fueling / off-network.
       if (
         homeInf.status === "out_of_service" ||
         homeInf.status === "deadheading"
@@ -369,6 +367,7 @@ export async function fetchLiveBoard(): Promise<{
   const fleet: FleetVehicle[] = inferred.map((inf, i) => {
     const raw = raws[i];
     return {
+      vehicleKey: raw.vehicleKey,
       homeKey: raw.homeKey,
       vehicleNumber: raw.vehicleNumber,
       state: raw.state,
@@ -383,12 +382,7 @@ export async function fetchLiveBoard(): Promise<{
       inferredService: inf.inferredService,
       status: inf.status,
       statusReason: inf.statusReason,
-      assignmentNote:
-        inf.status === "in_service" &&
-        inf.inferredService &&
-        inf.inferredService !== inf.homeKey
-          ? inf.statusReason
-          : null,
+      assignmentNote: inf.statusReason,
     };
   });
 

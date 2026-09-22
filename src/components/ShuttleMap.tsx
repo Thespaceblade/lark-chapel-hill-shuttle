@@ -12,7 +12,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import type { FleetVehicle, LiveShuttle, ShuttleKey } from "@/lib/shuttles";
-import { SHUTTLES } from "@/lib/shuttles";
+import { SHUTTLES, vehicleLabel } from "@/lib/shuttles";
 import "leaflet/dist/leaflet.css";
 import styles from "./ShuttleMap.module.css";
 
@@ -592,7 +592,7 @@ export default function ShuttleMap({
             const showArrow = v.rideable && !v.atLark;
             return (
               <SmoothMarker
-                key={`fleet-${v.homeKey}`}
+                key={`fleet-${v.vehicleKey}`}
                 position={[v.lat, v.lon]}
                 lineKey={paint?.key ?? "oos"}
                 color={color}
@@ -602,7 +602,9 @@ export default function ShuttleMap({
                 opacity={v.rideable ? 1 : 0.55}
               >
                 <Tooltip direction="top" offset={[0, -12]} permanent={false}>
-                  <strong>{v.vehicleNumber ?? SHUTTLES[v.homeKey].name}</strong>
+                  <strong>
+                    {v.vehicleNumber ?? vehicleLabel(v.vehicleKey)}
+                  </strong>
                   <br />
                   {v.rideable
                     ? `Running ${service ? SHUTTLES[service].name : "—"}`

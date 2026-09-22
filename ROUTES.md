@@ -13,31 +13,23 @@ Lark → Memorial Hall → Student Union → Business school → Health Sciences
 
 ## Daily vehicle roster (America/New_York)
 
-| Time | Shuttle 1 (Lark Chapel Hill 1) | Shuttle 2 (Lark Chapel Hill 2) |
-|------|--------------------------------|--------------------------------|
-| Before 2:00 PM | Express | Regular |
-| From 2:00 PM | Regular | Express |
+| Time | Shuttle 1 | Shuttle 2 |
+|------|-----------|-----------|
+| Before 2:00 PM | usual Express | usual Regular |
+| From 2:00 PM | usual Regular | usual Express |
 
-Physical Motive share UUIDs and history `shuttle_key` values stay fixed
-(morning paint: Shuttle 1 → `express`, Shuttle 2 → `regular`). Only the
-**usual home service** for live UI notes remaps (`src/lib/roster.ts`).
+**Vehicles** are numbered `1` / `2` (Motive trackers). History `shuttle_key`
+is the vehicle number. **Routes** are `express` / `regular` (stored as
+`route_key` from GPS). The roster above is only a soft “usual service” hint
+for UI notes — either bus may run either route.
 
 ## Vehicle → route assignment
 
-Motive trackers keep a stable `shuttle_key` (`express` / `regular`) in history.
-Which **geometry** to project onto is separate: see `data/route_assignment.json`.
+Default `mode` is **`auto`**: compare GPS to both loops. Pin with
+`"1": "regular"` in `data/route_assignment.json` or `match 1 --on-route regular`.
 
-Default `mode` is **`auto`**: compare recent pings to both loops and pick the
-clearer fit (Express-on-Regular, both on home routes, etc.). Pin a vehicle with
-`"express": "regular"` or pass `match express --on-route regular` when you want
-a fixed mapping. Do **not** rewrite history keys.
-
-For training / clean exports, run `python3 lark_shuttle.py label`. That writes
-`route_key` on every ping and `data/train_pings.json` (`train_ok` only). An
-Express tracker ping that sits on the Regular loop is labeled `route_key=regular`.
-
-The web UI does the same live via GPS (`src/lib/service.ts` + `assignServices`),
-and uses the daily roster above for “usual home” paint after 2:00 PM.
+Run `python3 lark_shuttle.py label` for training exports. Notes look like
+`Shuttle 1 · running Regular`, not “Express is on Regular.”
 
 Preview: `kmz_routes_preview.html`
 Machine-readable: `intended_routes.json` (and `data/intended_routes.json` if present)

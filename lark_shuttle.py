@@ -66,8 +66,8 @@ TZ_CHAPEL_HILL = "America/New_York"
 # over Linktree title keywords — titles now say things like
 # "Shuttle 1: Express → Regular (starting at 2 PM)".
 KNOWN_SHARE_UUIDS = {
-    "0c5a01f2-a549-11f1-83ea-4247aa532d4a": "shuttle1",  # express share slot
-    "2485bb70-a546-11f1-a663-320d2d4970d9": "shuttle2",  # regular share slot
+    "0c5a01f2-a549-11f1-83ea-4247aa532d4a": "1",  # Shuttle 1 (Motive)
+    "2485bb70-a546-11f1-a663-320d2d4970d9": "2",  # Shuttle 2 (Motive)
 }
 
 
@@ -102,11 +102,12 @@ def roster_swapped(when: datetime | None = None) -> bool:
 
 
 def home_service_for_vehicle(vehicle_id: str, when: datetime | None = None) -> str:
-    """Usual passenger service for a physical bus (see ROSTER_SWAP_MINUTE)."""
+    """Soft usual passenger service for a physical bus (see ROSTER_SWAP_MINUTE)."""
     swapped = roster_swapped(when)
-    if vehicle_id == "shuttle1":
+    vid = {"shuttle1": "1", "shuttle2": "2"}.get(vehicle_id, vehicle_id)
+    if vid == "1":
         return "regular" if swapped else "express"
-    if vehicle_id == "shuttle2":
+    if vid == "2":
         return "express" if swapped else "regular"
     return vehicle_id
 
@@ -114,34 +115,25 @@ def home_service_for_vehicle(vehicle_id: str, when: datetime | None = None) -> s
 def apply_daily_roster(
     shuttles: list[dict[str, str]], when: datetime | None = None
 ) -> list[dict[str, str]]:
-    """Annotate buses with today's usual home service — do not rewrite history keys.
+    """Annotate buses with today's soft usual home service.
 
-    History / Motive share slots stay morning paint (`express` = Shuttle 1 UUID,
-    `regular` = Shuttle 2 UUID). `home_service` is what riders should expect
-    for that physical bus right now (swaps at 2:00 PM ET).
+    History keys are vehicle numbers ``1`` / ``2`` (not Express/Regular).
+    ``home_service`` is a roster hint only; ``route_key`` comes from GPS.
     """
     out: list[dict[str, str]] = []
     for s in shuttles:
-        vehicle_id = s.get("vehicle_id") or (
-            "shuttle1"
-            if s["key"] == "express"
-            else "shuttle2"
-            if s["key"] == "regular"
-            else s["key"]
-        )
-        # Stable share-slot key for history (never remapped by clock).
-        share_key = (
-            "express"
-            if vehicle_id == "shuttle1"
-            else "regular"
-            if vehicle_id == "shuttle2"
-            else s["key"]
-        )
+        raw = s.get("vehicle_id") or s["key"]
+        vehicle_id = {
+            "shuttle1": "1",
+            "shuttle2": "2",
+            "express": "1",
+            "regular": "2",
+        }.get(raw, raw)
         row = dict(s)
         row["vehicle_id"] = vehicle_id
-        row["key"] = share_key
+        row["key"] = vehicle_id  # history / logger identity
         row["home_service"] = home_service_for_vehicle(vehicle_id, when)
-        row["name"] = s.get("share_name") or s.get("name") or share_key
+        row["name"] = s.get("share_name") or s.get("name") or f"Shuttle {vehicle_id}"
         out.append(row)
     return out
 
@@ -177,15 +169,15 @@ def discover_shuttles_from_linktree(url: str = LINKTREE_URL) -> list[dict[str, s
         if uuid in KNOWN_SHARE_UUIDS:
             vehicle_id = KNOWN_SHARE_UUIDS[uuid]
         elif "shuttle 1" in lower or "tracker 1" in lower:
-            vehicle_id = "shuttle1"
+            vehicle_id = "1"
         elif "shuttle 2" in lower or "tracker 2" in lower:
-            vehicle_id = "shuttle2"
+            vehicle_id = "2"
         elif "express" in lower and "regular" not in lower:
-            vehicle_id = "shuttle1"
+            vehicle_id = "1"
         elif "regular" in lower and "express" not in lower:
-            vehicle_id = "shuttle2"
+            vehicle_id = "2"
         else:
-            vehicle_id = f"shuttle_{len(shuttles) + 1}"
+            vehicle_id = f"v{len(shuttles) + 1}"
         shuttles.append(
             {
                 "vehicle_id": vehicle_id,
@@ -379,10 +371,12 @@ def resolve_keys(which: str, shuttles: list[dict[str, str]]) -> list[dict[str, s
     raw = which.lower().strip()
     # Physical bus aliases always follow Shuttle 1 / 2, not morning paint.
     vehicle_aliases = {
-        "1": "shuttle1",
-        "shuttle1": "shuttle1",
-        "2": "shuttle2",
-        "shuttle2": "shuttle2",
+        "1": "1",
+        "shuttle1": "1",
+        "express": "1",
+        "2": "2",
+        "shuttle2": "2",
+        "regular": "2",
     }
     if raw in vehicle_aliases:
         vid = vehicle_aliases[raw]
@@ -1087,15 +1081,19 @@ def _history_time_bounds(args: argparse.Namespace) -> tuple[datetime | None, dat
 
 
 def _normalize_shuttle_key(key: str | None) -> str | None:
+    """Normalize a vehicle id for history lookup (1/2)."""
     if not key or key == "all":
         return key
-    raw = key.lower()
-    # Physical aliases → stable Motive share slots (history keys), not clock home.
-    if raw in ("1", "shuttle1"):
-        return "express"
-    if raw in ("2", "shuttle2"):
-        return "regular"
-    return raw
+    raw = key.lower().strip()
+    aliases = {
+        "1": "1",
+        "shuttle1": "1",
+        "express": "1",
+        "2": "2",
+        "shuttle2": "2",
+        "regular": "2",
+    }
+    return aliases.get(raw, raw)
 
 
 def cmd_match(args: argparse.Namespace) -> int:

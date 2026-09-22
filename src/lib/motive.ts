@@ -152,6 +152,7 @@ function outOfServiceBoard(
 ): LiveShuttle {
   const atLark =
     raw.lat != null && raw.lon != null ? isAtLark(raw.lat, raw.lon) : false;
+  const bearing = normalizeBearing(raw.bearing);
   return {
     key,
     name: SHUTTLES[key].name,
@@ -162,8 +163,8 @@ function outOfServiceBoard(
     address: raw.address,
     lat: raw.lat,
     lon: raw.lon,
-    bearing: raw.bearing,
-    compass: raw.compass,
+    bearing,
+    compass: bearing == null ? null : raw.compass,
     locatedAt: raw.locatedAt,
     mapsUrl:
       raw.lat != null && raw.lon != null
@@ -182,6 +183,12 @@ function outOfServiceBoard(
   };
 }
 
+/** Motive uses -1 (or other negatives) when heading is unknown. */
+function normalizeBearing(bearing: number | null): number | null {
+  if (bearing == null || !Number.isFinite(bearing) || bearing < 0) return null;
+  return ((bearing % 360) + 360) % 360;
+}
+
 function buildServiceShuttle(
   service: ShuttleKey,
   raw: RawVehicle,
@@ -192,13 +199,16 @@ function buildServiceShuttle(
   const atLark =
     raw.lat != null && raw.lon != null ? isAtLark(raw.lat, raw.lon) : false;
   const snap = larkScheduleSnapshot(service);
+  const bearing = normalizeBearing(raw.bearing);
   let nextStop: LiveShuttle["nextStop"] = null;
   let loopFrac: number | null = null;
   let offLoopM: number | null = null;
   const diverted = opts?.divertedFrom != null;
 
-  if (raw.lat != null && raw.lon != null) {
-    const proj = loop.project(raw.lat, raw.lon, raw.bearing);
+  // Diverted boards must not mirror the other line's next-stop / Lark ETA —
+  // that duplicated identical Sitterson timers on Express + Regular.
+  if (!diverted && raw.lat != null && raw.lon != null) {
+    const proj = loop.project(raw.lat, raw.lon, bearing);
     loopFrac = proj.loopFrac;
     offLoopM = Math.round(proj.offsetM * 10) / 10;
     if (!atLark) {
@@ -226,8 +236,8 @@ function buildServiceShuttle(
     address: raw.address,
     lat: raw.lat,
     lon: raw.lon,
-    bearing: raw.bearing,
-    compass: raw.compass,
+    bearing,
+    compass: bearing == null ? null : raw.compass,
     locatedAt: raw.locatedAt,
     mapsUrl:
       raw.lat != null && raw.lon != null
@@ -239,16 +249,18 @@ function buildServiceShuttle(
     serviceStatus: diverted ? "diverted" : "active",
     divertedTo: diverted ? service : null,
     assignmentNote: note,
-    // Diverted boards use the route they're actually on for Lark holds.
-    larkSchedule: {
-      headwayMin: snap.headwayMin,
-      nextSlotMin: snap.nextSlotMin,
-      prevSlotMin: snap.prevSlotMin,
-      minutesUntilNext: snap.minutesUntilNext,
-      minutesSincePrev: snap.minutesSincePrev,
-      nextDepartAtLabel: snap.nextDepartAtLabel,
-      prevDepartAtLabel: snap.prevDepartAtLabel,
-    },
+    // Only the active service board owns schedule / next-stop countdowns.
+    larkSchedule: diverted
+      ? null
+      : {
+          headwayMin: snap.headwayMin,
+          nextSlotMin: snap.nextSlotMin,
+          prevSlotMin: snap.prevSlotMin,
+          minutesUntilNext: snap.minutesUntilNext,
+          minutesSincePrev: snap.minutesSincePrev,
+          nextDepartAtLabel: snap.nextDepartAtLabel,
+          prevDepartAtLabel: snap.prevDepartAtLabel,
+        },
     loopFrac,
     offLoopM,
   };
@@ -303,8 +315,8 @@ export async function fetchLiveBoard(): Promise<{
       const homeRaw = byHome.get(service);
       if (!homeInf || !homeRaw) return emptyService(service);
 
-      // Usual bus is covering the other line: keep live next-stop updates
-      // on this board, but mark not rideable for this service.
+      // Usual bus is covering the other line: mark diverted (not rideable)
+      // without copying the other line's next-stop / departure ETA.
       if (
         homeInf.status === "in_service" &&
         homeInf.inferredService &&
@@ -341,7 +353,7 @@ export async function fetchLiveBoard(): Promise<{
       address: raw.address,
       lat: raw.lat,
       lon: raw.lon,
-      bearing: raw.bearing,
+      bearing: normalizeBearing(raw.bearing),
       locatedAt: raw.locatedAt,
       atLark: inf.atLark,
       rideable: inf.status === "in_service",

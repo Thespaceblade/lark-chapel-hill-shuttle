@@ -210,7 +210,10 @@ export default function ShuttleMap({
             const color = paint?.color ?? "#6b7280";
             const label = paint?.bullet ?? "·";
             const showArrow =
-              v.rideable && !v.atLark && v.bearing != null;
+              v.rideable &&
+              !v.atLark &&
+              v.bearing != null &&
+              v.bearing >= 0;
             const icon = busIcon(
               paint?.key ?? "oos",
               color,
@@ -247,7 +250,7 @@ export default function ShuttleMap({
           if (s.lat == null || s.lon == null) return null;
           const meta = SHUTTLES[s.key];
           const showArrow =
-            s.rideable && !s.atLark && s.bearing != null;
+            s.rideable && !s.atLark && s.bearing != null && s.bearing >= 0;
           const icon = busIcon(
             s.key,
             meta.color,

@@ -91,50 +91,17 @@ function boardForShuttle(
     };
   }
 
-  // Usual bus is covering the other line — still show live next stop / hold
-  // for the route it's actually on (not this line's schedule pretend).
+  // Usual bus is covering the other line — no next-stop / departure timer
+  // here (that belongs only on the active service board).
   if (s.serviceStatus === "diverted") {
     const other = s.divertedTo ? SHUTTLES[s.divertedTo].name : "other line";
-    if (s.atLark && s.larkSchedule) {
-      const snap = s.larkSchedule as LarkScheduleSnapshot;
-      const hold = larkHoldBoard(snap, holdSlotMin);
-      if (hold.mode === "lark_unscheduled") {
-        return {
-          label: `On ${other}`,
-          name: "Lark Chapel Hill",
-          etaMin: null,
-          detail: `${s.assignmentNote ?? `Running ${other}`} · departure unknown`,
-        };
-      }
-      return {
-        label: `Departing (${other})`,
-        name: "Lark Chapel Hill",
-        etaMin: hold.etaMin,
-        detail: [
-          s.assignmentNote ?? `Running ${other} — not ${s.name} service`,
-          hold.departAtLabel ? `Scheduled ${hold.departAtLabel}` : null,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      };
-    }
-    if (s.nextStop) {
-      return {
-        label: `Next on ${other}`,
-        name: s.nextStop.name,
-        etaMin:
-          s.nextStop.etaMin != null
-            ? Math.max(0, Math.round(s.nextStop.etaMin))
-            : null,
-        detail:
-          s.assignmentNote ?? `Running ${other} — not ${s.name} service`,
-      };
-    }
     return {
       label: `On ${other}`,
-      name: s.vehicleNumber ?? "Bus",
+      name: `Bus is on ${other}`,
       etaMin: null,
-      detail: s.assignmentNote,
+      detail:
+        s.assignmentNote ??
+        `Not ${s.name} service — see ${other} for next stop`,
     };
   }
 
@@ -255,7 +222,7 @@ export default function HomePage() {
             const prev = holdSlots.current[s.key] ?? null;
             const trackHold =
               s.atLark &&
-              (s.serviceStatus === "active" || s.serviceStatus === "diverted") &&
+              s.serviceStatus === "active" &&
               s.larkSchedule;
 
             if (!trackHold) {
@@ -413,9 +380,7 @@ export default function HomePage() {
                         <span className={styles.etaUnit}>
                           {s?.serviceStatus === "active" && s.atLark
                             ? "TBD"
-                            : s?.serviceStatus === "diverted" && s.atLark
-                              ? "TBD"
-                              : "—"}
+                            : "—"}
                         </span>
                       )}
                     </div>

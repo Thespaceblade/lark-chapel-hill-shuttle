@@ -1,33 +1,29 @@
 # Lark Chapel Hill Shuttle Locator
 
-Live positions from Lark’s Linktree Motive share links, a local history logger,
-loop-matching, and a **Vercel-ready Next.js tracker** in `web/`.
+Live Motive share polling (Python CLI) plus a **Vercel Next.js tracker** at the repo root.
 
 ## Web app (Vercel)
 
 ```bash
-cd web
 npm install
 npm run dev
 # http://localhost:3000
 ```
 
-Deploy:
+Deploy (Root Directory = repository root / leave blank — `package.json` is at the top level):
 
 1. Import https://github.com/Thespaceblade/lark-chapel-hill-shuttle in Vercel
-2. Set **Root Directory** to `web`
-3. Add env var **`MOTIVE_WEB_SHARE_API_KEY`** (Project → Settings → Environment Variables)
-4. Framework: Next.js (auto) · Deploy
+2. Add env var **`MOTIVE_WEB_SHARE_API_KEY`**
+3. Deploy
 
-Local secret (same name):
+Local secret:
 
 ```bash
-cp web/.env.example web/.env.local
-# paste your Motive X-Web-Share-Api-Key value
+cp .env.example .env.local
+# paste Motive X-Web-Share-Api-Key
 ```
 
-The site polls `/api/live` every 1s (server → Motive), draws intended loops, and
-shows a crude next-stop ETA from loop distance ÷ speed.
+The site polls `/api/live` every 1s, draws intended loops, and shows next-stop ETA.
 
 ## Python CLI
 
@@ -38,21 +34,9 @@ python3 lark_shuttle.py history express --hours 6
 python3 lark_shuttle.py match regular
 ```
 
-History is stored in `shuttle_history.db` (gitignored). Intended loops live in
-`intended_routes.json` (copied into `web/data/` for the site).
-
-## Commands
-
-| Command | What it does |
-|---|---|
-| `now` (default) | Live lat/lon, address, speed |
-| `log` | Poll forever and save new pings |
-| `history` | Print saved trail |
-| `match` | Snap pings to intended loop; infer legs |
-| `discover` | Show Linktree UUIDs + Motive API endpoint |
+History: `shuttle_history.db` (gitignored). Routes: `intended_routes.json` / `data/intended_routes.json`.
 
 ## Notes
 
 - Motive’s public share API only returns the **current** ping.
 - Share links expire around `2027-07-01`.
-- Be polite; don’t hammer the endpoint.

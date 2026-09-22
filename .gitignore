@@ -1,18 +1,25 @@
+
 # Dependencies / caches
-node_modules/
-web/node_modules/
-web/.next/
-web/.vercel/
-__pycache__/
-*.pyc
 .DS_Store
 .env
 .env*.local
-
+# Large generated map screenshots (HTML maps are enough)
+*_map.jpg
+.next/
+next-env.d.ts
+# Next.js
+node_modules/
+out/
+*.png
+*.pyc
+__pycache__/
+route_map_preview.jpg
 # Runtime data
 shuttle_history.db
-
-# Large generated map screenshots (HTML maps are enough)
-*.png
-*_map.jpg
-route_map_preview.jpg
+subway-*.jpg
+subway-*.png
+*.tsbuildinfo
+.vercel/
+web/.next/
+web/node_modules/
+web/.vercel/

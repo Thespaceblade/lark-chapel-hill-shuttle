@@ -1,0 +1,9 @@
+{
+  "updated_at": "2026-09-22T16:40:00Z",
+  "mode": "auto",
+  "notes": "mode=auto: infer which loop each Motive vehicle is running from GPS fit (same idea as the web UI). vehicle_to_route may pin a vehicle (e.g. express→regular) or use auto. Never rewrite shuttle_key in history.",
+  "vehicle_to_route": {
+    "express": "auto",
+    "regular": "auto"
+  }
+}

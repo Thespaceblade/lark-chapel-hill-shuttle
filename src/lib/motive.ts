@@ -11,7 +11,7 @@ import {
 import { RouteLoop, etaMinutes, parseSpeedMph } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
-import { isAtLark, larkScheduleSnapshot } from "./schedule";
+import { isAtLark, larkScheduleSnapshot, distanceM, AT_STOP_RADIUS_M } from "./schedule";
 import { assignServices, classifyVehicle } from "./service";
 
 type MotivePayload = {
@@ -134,6 +134,7 @@ function emptyService(key: ShuttleKey): LiveShuttle {
     mapsUrl: null,
     nextStop: null,
     atLark: false,
+    atStop: false,
     rideable: false,
     serviceStatus: "no_bus",
     divertedTo: null,
@@ -172,6 +173,7 @@ function outOfServiceBoard(
         : null,
     nextStop: null,
     atLark,
+    atStop: atLark,
     rideable: false,
     serviceStatus: "out_of_service",
     divertedTo: null,
@@ -189,6 +191,17 @@ function normalizeBearing(bearing: number | null): number | null {
   return ((bearing % 360) + 360) % 360;
 }
 
+function nearPublishedStop(
+  lat: number,
+  lon: number,
+  stops: Stop[],
+): boolean {
+  for (const stop of stops) {
+    if (distanceM({ lat, lon }, stop) <= AT_STOP_RADIUS_M) return true;
+  }
+  return false;
+}
+
 function buildServiceShuttle(
   service: ShuttleKey,
   raw: RawVehicle,
@@ -198,6 +211,11 @@ function buildServiceShuttle(
   const loop = getLoop(service);
   const atLark =
     raw.lat != null && raw.lon != null ? isAtLark(raw.lat, raw.lon) : false;
+  const atStop =
+    atLark ||
+    (raw.lat != null &&
+      raw.lon != null &&
+      nearPublishedStop(raw.lat, raw.lon, loop.stops));
   const snap = larkScheduleSnapshot(service);
   const bearing = normalizeBearing(raw.bearing);
   let nextStop: LiveShuttle["nextStop"] = null;
@@ -245,6 +263,7 @@ function buildServiceShuttle(
         : null,
     nextStop,
     atLark,
+    atStop,
     rideable: !diverted,
     serviceStatus: diverted ? "diverted" : "active",
     divertedTo: diverted ? service : null,

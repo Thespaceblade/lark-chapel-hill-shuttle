@@ -1,0 +1,6 @@
+{
+  "exported_at": "2026-09-22T17:50:46Z",
+  "ping_count": 0,
+  "notes": "Resolved predictions only (arrived). Features at prediction time + actual_min / error_min for supervised ETA training.",
+  "predictions": []
+}

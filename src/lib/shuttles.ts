@@ -82,9 +82,12 @@ export const SHUTTLES: Record<
   ShuttleKey,
   { key: ShuttleKey; name: string; uuid: string; color: string; bullet: string }
 > = {
+  // UUIDs are physical Motive shares (morning paint). After 2 PM ET the
+  // roster remaps home service — see src/lib/roster.ts.
   express: {
     key: "express",
     name: "Express",
+    // Shuttle 1 (Lark Chapel Hill 1) — Express until 2 PM, then Regular
     uuid: "0c5a01f2-a549-11f1-83ea-4247aa532d4a",
     color: "#0039a6",
     bullet: "E",
@@ -92,6 +95,7 @@ export const SHUTTLES: Record<
   regular: {
     key: "regular",
     name: "Regular",
+    // Shuttle 2 (Lark Chapel Hill 2) — Regular until 2 PM, then Express
     uuid: "2485bb70-a546-11f1-a663-320d2d4970d9",
     color: "#ff6319",
     bullet: "R",

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import type { LiveShuttle, ShuttleKey } from "@/lib/shuttles";
+import type { FleetVehicle, LiveShuttle, ShuttleKey } from "@/lib/shuttles";
 import { SHUTTLES } from "@/lib/shuttles";
 import {
   LARK_DEPARTURE_GRACE_MIN,
@@ -19,6 +19,7 @@ const ShuttleMap = dynamic(() => import("@/components/ShuttleMap"), {
 type LiveResponse = {
   fetchedAt: string;
   shuttles: LiveShuttle[];
+  fleet?: FleetVehicle[];
   error?: string;
 };
 
@@ -42,12 +43,14 @@ function ageLabel(iso: string | null): string {
   return `${Math.floor(sec / 3600)}h ago`;
 }
 
-function statusWord(state: string | null | undefined): string {
-  const s = (state || "").toLowerCase();
-  if (s === "moving") return "en route";
-  if (s === "idling") return "holding";
-  if (s === "off") return "out of service";
-  return s || "unknown";
+function statusWord(s: LiveShuttle | undefined): string {
+  if (!s || s.serviceStatus === "no_bus") return "no bus";
+  if (s.atLark) return "at Lark";
+  const st = (s.state || "").toLowerCase();
+  if (st === "moving") return "en route";
+  if (st === "idling") return "holding";
+  if (st === "off") return "out of service";
+  return st || "unknown";
 }
 
 type BoardView = {
@@ -61,8 +64,13 @@ function boardForShuttle(
   s: LiveShuttle | undefined,
   holdSlotMin: number | null,
 ): BoardView {
-  if (!s) {
-    return { label: "Next stop", name: "—", etaMin: null, detail: null };
+  if (!s || s.serviceStatus === "no_bus" || !s.rideable) {
+    return {
+      label: "Service",
+      name: "No bus on this route",
+      etaMin: null,
+      detail: "May be parked, fueling, or running the other line",
+    };
   }
 
   if (s.atLark && s.larkSchedule) {
@@ -73,16 +81,23 @@ function boardForShuttle(
         label: "At Lark",
         name: "Lark Chapel Hill",
         etaMin: null,
-        detail: "Departure time unknown",
+        detail: s.assignmentNote
+          ? `${s.assignmentNote} · departure unknown`
+          : "Departure time unknown",
       };
     }
     return {
       label: hold.mode === "departing_lark_now" ? "Departing" : "Departing Lark",
       name: "Lark Chapel Hill",
       etaMin: hold.etaMin,
-      detail: hold.departAtLabel
-        ? `Scheduled ${hold.departAtLabel} · every ${hold.headwayMin} min`
-        : `Every ${hold.headwayMin} min`,
+      detail: [
+        hold.departAtLabel
+          ? `Scheduled ${hold.departAtLabel} · every ${hold.headwayMin} min`
+          : `Every ${hold.headwayMin} min`,
+        s.assignmentNote,
+      ]
+        .filter(Boolean)
+        .join(" · "),
     };
   }
 
@@ -94,11 +109,16 @@ function boardForShuttle(
         s.nextStop.etaMin != null
           ? Math.max(0, Math.round(s.nextStop.etaMin))
           : null,
-      detail: null,
+      detail: s.assignmentNote,
     };
   }
 
-  return { label: "Next stop", name: "—", etaMin: null, detail: null };
+  return {
+    label: "Next stop",
+    name: "—",
+    etaMin: null,
+    detail: s.assignmentNote,
+  };
 }
 
 function LineBullet({
@@ -211,6 +231,7 @@ export default function HomePage() {
         <ShuttleMap
           routes={routes}
           shuttles={live?.shuttles ?? []}
+          fleet={live?.fleet ?? []}
           focus={focus}
           holdSlots={holdSlots.current}
         />
@@ -280,10 +301,14 @@ export default function HomePage() {
                   <div
                     className={styles.liveTag}
                     data-state={
-                      s?.atLark ? "idling" : (s?.state || "").toLowerCase()
+                      !s || s.serviceStatus === "no_bus"
+                        ? "off"
+                        : s.atLark
+                          ? "idling"
+                          : (s.state || "").toLowerCase()
                     }
                   >
-                    {s?.atLark ? "at Lark" : statusWord(s?.state)}
+                    {statusWord(s)}
                   </div>
                 </div>
 
@@ -299,7 +324,9 @@ export default function HomePage() {
                         </>
                       ) : (
                         <span className={styles.etaUnit}>
-                          {s?.atLark ? "TBD" : "—"}
+                          {s?.atLark && s.serviceStatus === "active"
+                            ? "TBD"
+                            : "—"}
                         </span>
                       )}
                     </div>

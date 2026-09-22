@@ -11,7 +11,7 @@ import {
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
-import type { LiveShuttle, ShuttleKey } from "@/lib/shuttles";
+import type { FleetVehicle, LiveShuttle, ShuttleKey } from "@/lib/shuttles";
 import { SHUTTLES } from "@/lib/shuttles";
 import "leaflet/dist/leaflet.css";
 import styles from "./ShuttleMap.module.css";
@@ -26,6 +26,7 @@ type RoutesResponse = {
 type Props = {
   routes: RoutesResponse | null;
   shuttles: LiveShuttle[];
+  fleet?: FleetVehicle[];
   focus: ShuttleKey | "both";
   holdSlots?: Partial<Record<ShuttleKey, number | null>>;
 };
@@ -71,7 +72,7 @@ function FitToRoutes({
 }
 
 function busIcon(
-  key: ShuttleKey,
+  key: ShuttleKey | "oos",
   color: string,
   label: string,
   bearing: number | null,
@@ -85,7 +86,7 @@ function busIcon(
     rot == null
       ? ""
       : `<div class="${styles.busArrowRing}" style="transform:rotate(${rot}deg)">
-           <div class="${styles.busArrow}" data-line="${key}"></div>
+           <div class="${styles.busArrow}" data-line="${key === "oos" ? "express" : key}"></div>
          </div>`;
   return L.divIcon({
     className: styles.busIconWrap,
@@ -101,11 +102,35 @@ function busIcon(
 export default function ShuttleMap({
   routes,
   shuttles,
+  fleet = [],
   focus,
   holdSlots,
 }: Props) {
   const showExpress = focus === "both" || focus === "express";
   const showRegular = focus === "both" || focus === "regular";
+
+  // Prefer fleet markers (includes OOS). Fall back to service shuttles.
+  const markers =
+    fleet.length > 0
+      ? fleet
+          .filter((v) => v.lat != null && v.lon != null)
+          .map((v) => {
+            const service = v.inferredService;
+            const visible =
+              focus === "both"
+                ? true
+                : service != null
+                  ? service === focus
+                  : false;
+            return { kind: "fleet" as const, v, visible };
+          })
+      : shuttles
+          .filter((s) => s.lat != null && s.lon != null && s.rideable)
+          .map((s) => ({
+            kind: "shuttle" as const,
+            s,
+            visible: focus === "both" || focus === s.key,
+          }));
 
   return (
     <div className={styles.mapRoot}>
@@ -175,9 +200,53 @@ export default function ShuttleMap({
               </CircleMarker>
             ))}
 
-        {shuttles.map((s) => {
+        {markers.map((m) => {
+          if (!m.visible) return null;
+          if (m.kind === "fleet") {
+            const v = m.v;
+            if (v.lat == null || v.lon == null) return null;
+            const service = v.inferredService;
+            const paint = v.rideable && service ? SHUTTLES[service] : null;
+            const color = paint?.color ?? "#6b7280";
+            const label = paint?.bullet ?? "·";
+            const moving =
+              v.rideable &&
+              (v.state || "").toLowerCase() === "moving" &&
+              !v.atLark;
+            const icon = busIcon(
+              paint?.key ?? "oos",
+              color,
+              label,
+              v.bearing,
+              moving,
+            );
+            return (
+              <Marker
+                key={`fleet-${v.homeKey}`}
+                position={[v.lat, v.lon]}
+                icon={icon}
+                opacity={v.rideable ? 1 : 0.55}
+              >
+                <Tooltip direction="top" offset={[0, -12]} permanent={false}>
+                  <strong>{v.vehicleNumber ?? SHUTTLES[v.homeKey].name}</strong>
+                  <br />
+                  {v.rideable
+                    ? `Running ${service ? SHUTTLES[service].name : "—"}`
+                    : v.statusReason ?? "Not rideable"}
+                  {v.speed ? ` · ${v.speed}` : ""}
+                  {v.assignmentNote ? (
+                    <>
+                      <br />
+                      {v.assignmentNote}
+                    </>
+                  ) : null}
+                </Tooltip>
+              </Marker>
+            );
+          }
+
+          const s = m.s;
           if (s.lat == null || s.lon == null) return null;
-          if (focus !== "both" && focus !== s.key) return null;
           const meta = SHUTTLES[s.key];
           const moving =
             (s.state || "").toLowerCase() === "moving" && !s.atLark;
@@ -195,9 +264,12 @@ export default function ShuttleMap({
                 <br />
                 {s.atLark ? "at Lark" : s.state}
                 {s.speed ? ` · ${s.speed}` : ""}
-                {s.bearing != null && moving
-                  ? ` · heading ${Math.round(s.bearing)}°`
-                  : ""}
+                {s.assignmentNote ? (
+                  <>
+                    <br />
+                    {s.assignmentNote}
+                  </>
+                ) : null}
                 {s.atLark ? (
                   <>
                     <br />

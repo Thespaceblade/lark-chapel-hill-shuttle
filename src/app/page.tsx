@@ -151,6 +151,10 @@ export default function HomePage() {
                 type="button"
                 className={on ? styles.lineBtnOn : styles.lineBtn}
                 onClick={() => setFocus(key)}
+                aria-label={
+                  key === "both" ? "All lines" : SHUTTLES[key].name
+                }
+                aria-pressed={on}
               >
                 {key === "both" ? (
                   <>

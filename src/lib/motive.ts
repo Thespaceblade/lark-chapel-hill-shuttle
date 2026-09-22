@@ -1,7 +1,9 @@
 import {
   MOTIVE,
+  MOTIVE_PUBLIC_WEB_SHARE_API_KEY,
   SHUTTLES,
   getMotiveApiKey,
+  normalizeMotiveApiKey,
   type LiveShuttle,
   type ShuttleKey,
 } from "./shuttles";
@@ -36,21 +38,44 @@ function getLoop(key: ShuttleKey): RouteLoop {
   return new RouteLoop(key, route.line, route.stops, true);
 }
 
-export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
-  const meta = SHUTTLES[key];
-  const url = `${MOTIVE.endpoint}?type=v&uuid=${encodeURIComponent(meta.uuid)}`;
-  const res = await fetch(url, {
+async function requestLiveShare(uuid: string, apiKey: string): Promise<Response> {
+  const url = `${MOTIVE.endpoint}?type=v&uuid=${encodeURIComponent(uuid)}`;
+  return fetch(url, {
     headers: {
       "User-Agent": MOTIVE.userAgent,
       Accept: "application/json",
-      "X-Web-Share-Api-Key": getMotiveApiKey(),
+      "X-Web-Share-Api-Key": apiKey,
       Origin: "https://tracking.gomotive.com",
       Referer: "https://tracking.gomotive.com/",
     },
     cache: "no-store",
   });
+}
+
+export async function fetchLiveShuttle(key: ShuttleKey): Promise<LiveShuttle> {
+  const meta = SHUTTLES[key];
+  const envKey = normalizeMotiveApiKey(process.env.MOTIVE_WEB_SHARE_API_KEY);
+  const primaryKey = getMotiveApiKey();
+  let res = await requestLiveShare(meta.uuid, primaryKey);
+
+  // Wrong/quoted env key → 403 unauthorized; retry with the public share key.
+  if (
+    res.status === 403 &&
+    envKey &&
+    envKey !== MOTIVE_PUBLIC_WEB_SHARE_API_KEY
+  ) {
+    res = await requestLiveShare(meta.uuid, MOTIVE_PUBLIC_WEB_SHARE_API_KEY);
+  }
+
   if (!res.ok) {
-    throw new Error(`Motive ${key} HTTP ${res.status}`);
+    const body = (await res.text()).trim().slice(0, 200);
+    const hint =
+      res.status === 403
+        ? " (bad X-Web-Share-Api-Key — check MOTIVE_WEB_SHARE_API_KEY)"
+        : "";
+    throw new Error(
+      `Motive ${key} HTTP ${res.status}${hint}${body ? `: ${body}` : ""}`,
+    );
   }
   const payload = (await res.json()) as MotivePayload;
   const vehicle = payload.live_share?.vehicle;

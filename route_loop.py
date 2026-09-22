@@ -14,7 +14,142 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 DEFAULT_ROUTES = Path(__file__).resolve().parent / "intended_routes.json"
+DEFAULT_ASSIGNMENT = Path(__file__).resolve().parent / "data" / "route_assignment.json"
 EARTH_M = 6_371_000.0
+ROUTE_CANDIDATES = ("express", "regular")
+# Prefer a loop when median off is clearly better by this much (meters).
+AUTO_MARGIN_M = 25.0
+# Treat a ping as "on" a loop when offset ≤ this (matches web ON_ROUTE_MAX_M).
+ON_ROUTE_MAX_M = 90.0
+
+
+def load_route_assignment(path: Path | None = None) -> dict[str, Any]:
+    """Load assignment config: mode + optional per-vehicle overrides."""
+    path = path or DEFAULT_ASSIGNMENT
+    if not path.exists():
+        return {"mode": "auto", "vehicle_to_route": {}}
+    data = json.loads(path.read_text())
+    mapping = data.get("vehicle_to_route") or {}
+    return {
+        "mode": str(data.get("mode") or "auto").lower(),
+        "vehicle_to_route": {str(k): str(v) for k, v in mapping.items()},
+        "notes": data.get("notes"),
+        "updated_at": data.get("updated_at"),
+    }
+
+
+def infer_route_from_pings(
+    vehicle_key: str,
+    pings: Sequence[dict[str, Any]],
+    *,
+    routes_path: Path | None = None,
+    margin_m: float = AUTO_MARGIN_M,
+) -> tuple[str, dict[str, Any]]:
+    """Pick loop geometry from GPS fit. Returns (route_key, diagnostics)."""
+    routes_path = routes_path or DEFAULT_ROUTES
+    usable = [
+        p
+        for p in pings
+        if p.get("lat") is not None and p.get("lon") is not None
+    ]
+    diag: dict[str, Any] = {
+        "mode": "auto",
+        "ping_count": len(usable),
+        "fits": {},
+        "reason": None,
+    }
+    if not usable:
+        diag["reason"] = "no_pings_default_home"
+        return vehicle_key, diag
+
+    fits: dict[str, dict[str, float]] = {}
+    for key in ROUTE_CANDIDATES:
+        loop = RouteLoop.from_routes_file(key, routes_path)
+        offs = [
+            loop.project(float(p["lat"]), float(p["lon"])).offset_m for p in usable
+        ]
+        offs_sorted = sorted(offs)
+        mid = offs_sorted[len(offs_sorted) // 2]
+        p90 = offs_sorted[max(0, int(0.9 * len(offs_sorted)) - 1)]
+        on_frac = sum(1 for o in offs if o <= ON_ROUTE_MAX_M) / len(offs)
+        fits[key] = {
+            "median_off_m": round(mid, 1),
+            "p90_off_m": round(p90, 1),
+            "on_route_frac": round(on_frac, 3),
+        }
+    diag["fits"] = fits
+
+    # Rank by median offset (closer wins).
+    ranked = sorted(ROUTE_CANDIDATES, key=lambda k: fits[k]["median_off_m"])
+    best, second = ranked[0], ranked[1]
+    best_m = fits[best]["median_off_m"]
+    second_m = fits[second]["median_off_m"]
+    gap = second_m - best_m
+    best_on = fits[best]["on_route_frac"]
+    second_on = fits[second]["on_route_frac"]
+
+    if gap >= margin_m:
+        diag["reason"] = f"clearer_fit:{best}_by_{gap:.0f}m"
+        return best, diag
+
+    # More pings actually on one loop (shared corridor can fool median alone).
+    if best_on - second_on >= 0.2:
+        diag["reason"] = f"clearer_on_frac:{best}"
+        return best, diag
+
+    home_m = fits.get(vehicle_key, {}).get("median_off_m", float("inf"))
+    home_on = fits.get(vehicle_key, {}).get("on_route_frac", 0.0)
+
+    # Home paint is not actually on its loop — take the closer service.
+    if home_m > ON_ROUTE_MAX_M or home_on < 0.5:
+        diag["reason"] = f"home_off_prefer:{best}"
+        return best, diag
+
+    # Ambiguous shared corridor / Lark: prefer usual role.
+    if home_m <= ON_ROUTE_MAX_M * 1.5:
+        diag["reason"] = "ambiguous_prefer_home"
+        return vehicle_key, diag
+
+    diag["reason"] = f"ambiguous_prefer_closer:{best}"
+    return best, diag
+
+
+def resolve_route_key(
+    vehicle_key: str,
+    *,
+    on_route: str | None = None,
+    assignment_path: Path | None = None,
+    pings: Sequence[dict[str, Any]] | None = None,
+    routes_path: Path | None = None,
+) -> tuple[str, dict[str, Any]]:
+    """Which intended_routes geometry to use for this Motive vehicle.
+
+    Priority: ``--on-route`` override → static map value (if not auto) →
+    GPS auto-infer from ``pings`` → vehicle home key.
+    """
+    if on_route:
+        return on_route, {"mode": "override", "reason": "cli_on_route"}
+
+    cfg = load_route_assignment(assignment_path)
+    mapped = (cfg.get("vehicle_to_route") or {}).get(vehicle_key)
+    # Explicit fixed mapping wins over auto (e.g. "express": "regular").
+    if mapped and mapped.lower() not in ("auto", ""):
+        return mapped, {
+            "mode": "static",
+            "reason": f"assignment:{vehicle_key}->{mapped}",
+        }
+
+    mode = cfg.get("mode") or "auto"
+    if mode == "auto" and pings is not None:
+        return infer_route_from_pings(
+            vehicle_key, pings, routes_path=routes_path
+        )
+
+    # auto with no pings, or mode=home / unknown → identity
+    return vehicle_key, {
+        "mode": mode if mode != "auto" else "home",
+        "reason": "default_home",
+    }
 
 
 def haversine_m(a: Sequence[float], b: Sequence[float]) -> float:

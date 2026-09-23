@@ -1,8 +1,8 @@
 """Stable ETA + prediction/outcome logging for training.
 
 Instantaneous Motive speed is noisy (lights, crawls). We clamp to a realistic
-cruise band so ETA does not explode to 20–30 minutes at 2 mph, then log each
-prediction and resolve it when the vehicle actually reaches the target stop.
+cruise band, then temporally smooth so brief spikes do not dominate the
+logged / displayed ETA. Predictions resolve when the vehicle reaches the stop.
 """
 
 from __future__ import annotations
@@ -21,9 +21,18 @@ ETA_MAX_MINUTES = 40.0
 # Arrivals slower than this are a later lap / stale open pred — not a valid outcome.
 MAX_ARRIVAL_AGE_MIN = ETA_MAX_MINUTES + 10.0
 AT_STOP_ARRIVE_M = 45.0
-MODEL_VERSION = "eta_clamp_v1"
+MODEL_VERSION = "eta_smooth_v1"
 
 _SPEED_RE = re.compile(r"([\d.]+)")
+
+# Temporal smoothing — brief spikes (crawl / GPS snap) should not dominate.
+ETA_SMOOTH_MAX_UP_MIN = 1.1
+ETA_SMOOTH_MAX_DOWN_MIN = 2.25
+ETA_SMOOTH_ALPHA_UP = 0.22
+ETA_SMOOTH_ALPHA_DOWN = 0.48
+
+# In-process memory: vehicle_key → {stop, eta, at}
+_eta_smooth: dict[str, dict[str, Any]] = {}
 
 
 def parse_speed_mph(speed: str | float | int | None) -> float | None:
@@ -64,6 +73,45 @@ def eta_minutes(
     minutes = (along_m / mps / 60.0) if mps > 0 else ETA_MAX_MINUTES
     minutes = max(0.0, min(ETA_MAX_MINUTES, minutes))
     return round(minutes, 2), used
+
+
+def smooth_eta_minutes(
+    raw_eta_min: float,
+    *,
+    vehicle_key: str,
+    stop_key: str,
+    now: datetime | None = None,
+) -> float:
+    """Rate-limit + asymmetric EMA so short-lived extremes do not flash."""
+    now = now or datetime.now(timezone.utc)
+    raw = max(0.0, float(raw_eta_min))
+    prev = _eta_smooth.get(vehicle_key)
+    if not prev or prev.get("stop_key") != stop_key:
+        _eta_smooth[vehicle_key] = {
+            "stop_key": stop_key,
+            "eta_min": raw,
+            "at": now,
+        }
+        return raw
+
+    prev_at = prev.get("at")
+    if isinstance(prev_at, datetime):
+        dt_sec = max(0.35, (now - prev_at).total_seconds())
+    else:
+        dt_sec = 10.0
+    max_up = ETA_SMOOTH_MAX_UP_MIN * min(2.5, dt_sec / 1.0)
+    max_down = ETA_SMOOTH_MAX_DOWN_MIN * min(2.5, dt_sec / 1.0)
+    prev_eta = float(prev["eta_min"])
+    delta = max(-max_down, min(max_up, raw - prev_eta))
+    stepped = prev_eta + delta
+    alpha = ETA_SMOOTH_ALPHA_UP if stepped >= prev_eta else ETA_SMOOTH_ALPHA_DOWN
+    eta = max(0.0, alpha * stepped + (1.0 - alpha) * prev_eta)
+    _eta_smooth[vehicle_key] = {
+        "stop_key": stop_key,
+        "eta_min": eta,
+        "at": now,
+    }
+    return round(eta, 2)
 
 
 def next_stop_ahead(
@@ -437,8 +485,15 @@ def maybe_record_prediction(
         if last_t and (now_t - last_t).total_seconds() < 20:
             return {"resolved": resolved, "prediction": {"id": last["id"], "deduped": True}}
 
-    eta_min, used = eta_minutes(
+    eta_raw, used = eta_minutes(
         float(nxt["along_m"]), raw_mph, entity_state=entity_state
+    )
+    located_dt = parse_iso(located_at) or datetime.now(timezone.utc)
+    eta_min = smooth_eta_minutes(
+        eta_raw,
+        vehicle_key=shuttle_key,
+        stop_key=str(nxt["key"]),
+        now=located_dt,
     )
     pred_id = open_prediction(
         conn,

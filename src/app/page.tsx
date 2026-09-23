@@ -38,13 +38,7 @@ const POLL_MS = 1_000;
 function statusWord(s: LiveShuttle | undefined): string {
   if (!s || s.serviceStatus === "no_bus") return "no bus";
   if (s.serviceStatus === "out_of_service") return "not in service";
-  if (s.serviceStatus === "diverted") {
-    return s.divertedTo === "regular"
-      ? "on Regular"
-      : s.divertedTo === "express"
-        ? "on Express"
-        : "diverted";
-  }
+  if (s.serviceStatus === "diverted") return "no bus";
   if (s.atLark) return "at Lark";
   const st = (s.state || "").toLowerCase();
   if (st === "moving") return "en route";
@@ -85,17 +79,13 @@ function boardForShuttle(
     };
   }
 
-  // Usual bus is covering the other line — no next-stop / departure timer
-  // here (that belongs only on the active service board).
+  // Usual bus is covering the other line — this route is simply not running.
   if (s.serviceStatus === "diverted") {
-    const other = s.divertedTo ? SHUTTLES[s.divertedTo].name : "other line";
     return {
-      label: `On ${other}`,
-      name: `Bus is on ${other}`,
+      label: "Service",
+      name: "No bus on this route",
       etaMin: null,
-      detail:
-        s.assignmentNote ??
-        `Not ${s.name} service — see ${other} for next stop`,
+      detail: null,
     };
   }
 
@@ -363,11 +353,10 @@ export default function HomePage() {
                     data-state={
                       !s ||
                       s.serviceStatus === "no_bus" ||
-                      s.serviceStatus === "out_of_service"
+                      s.serviceStatus === "out_of_service" ||
+                      s.serviceStatus === "diverted"
                         ? "off"
-                        : s.serviceStatus === "diverted"
-                          ? "idling"
-                          : s.atLark ||
+                        : s.atLark ||
                               ((s.state || "").toLowerCase() === "idling" &&
                                 s.atStop)
                             ? "idling"

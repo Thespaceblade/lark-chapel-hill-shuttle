@@ -262,6 +262,60 @@ export function etaMinutes(
 export const ETA_TYPICAL_MPH = 13;
 export const ETA_MAX_MPH = 18;
 
+/** Soft caps on how fast a displayed ETA may move between polls. */
+export const ETA_SMOOTH_MAX_UP_MIN = 1.1;
+export const ETA_SMOOTH_MAX_DOWN_MIN = 2.25;
+/** Believe drops (approaching) faster than spikes (crawl / snap). */
+export const ETA_SMOOTH_ALPHA_UP = 0.22;
+export const ETA_SMOOTH_ALPHA_DOWN = 0.48;
+
+export type EtaSmoothState = {
+  stopKey: string;
+  etaMin: number;
+  atMs: number;
+};
+
+/**
+ * Dampen brief ETA spikes that do not last.
+ * Same next-stop: rate-limit then asymmetric EMA. New stop: adopt raw.
+ */
+export function smoothEtaMinutes(
+  rawEtaMin: number,
+  stopKey: string,
+  prev: EtaSmoothState | null | undefined,
+  nowMs: number = Date.now(),
+): EtaSmoothState {
+  const raw = Math.max(0, rawEtaMin);
+  if (!prev || prev.stopKey !== stopKey) {
+    return { stopKey, etaMin: raw, atMs: nowMs };
+  }
+
+  const dtSec = Math.max(0.35, (nowMs - prev.atMs) / 1000);
+  // Scale step limits with poll gap so 1s vs 10s collectors stay comparable.
+  const maxUp = ETA_SMOOTH_MAX_UP_MIN * Math.min(2.5, dtSec / 1.0);
+  const maxDown = ETA_SMOOTH_MAX_DOWN_MIN * Math.min(2.5, dtSec / 1.0);
+  const delta = Math.max(-maxDown, Math.min(maxUp, raw - prev.etaMin));
+  const stepped = prev.etaMin + delta;
+  const alpha =
+    stepped >= prev.etaMin ? ETA_SMOOTH_ALPHA_UP : ETA_SMOOTH_ALPHA_DOWN;
+  const etaMin = Math.max(0, alpha * stepped + (1 - alpha) * prev.etaMin);
+  return { stopKey, etaMin, atMs: nowMs };
+}
+
+/** Integer board minutes with hysteresis so 4.4↔4.6 does not flicker 4/5. */
+export function displayEtaMinutes(
+  etaMin: number,
+  prevDisplayed: number | null | undefined,
+): number {
+  const rounded = Math.max(0, Math.round(etaMin));
+  if (prevDisplayed == null || !Number.isFinite(prevDisplayed)) return rounded;
+  if (rounded === prevDisplayed) return prevDisplayed;
+  if (rounded > prevDisplayed) {
+    return etaMin >= prevDisplayed + 0.65 ? rounded : prevDisplayed;
+  }
+  return etaMin <= prevDisplayed - 0.65 ? rounded : prevDisplayed;
+}
+
 export function effectiveSpeedMph(
   speedMph: number | null,
   state: string | null = null,

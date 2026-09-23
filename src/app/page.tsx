@@ -9,6 +9,7 @@ import {
   larkHoldBoard,
   type LarkScheduleSnapshot,
 } from "@/lib/schedule";
+import { displayEtaMinutes } from "@/lib/loop";
 import LarkMark from "@/components/LarkMark";
 import styles from "./page.module.css";
 
@@ -62,6 +63,7 @@ type BoardView = {
 function boardForShuttle(
   s: LiveShuttle | undefined,
   holdSlotMin: number | null,
+  prevDisplayedEta: number | null = null,
 ): BoardView {
   if (!s || s.serviceStatus === "no_bus") {
     return {
@@ -139,7 +141,7 @@ function boardForShuttle(
       name: s.nextStop.name,
       etaMin:
         s.nextStop.etaMin != null
-          ? Math.max(0, Math.round(s.nextStop.etaMin))
+          ? displayEtaMinutes(s.nextStop.etaMin, prevDisplayedEta)
           : null,
       detail: s.assignmentNote,
     };
@@ -179,6 +181,11 @@ export default function HomePage() {
   const [focus, setFocus] = useState<ShuttleKey | "both">("both");
   /** Slot (minutes from midnight) each shuttle started holding for at Lark. */
   const holdSlots = useRef<Partial<Record<ShuttleKey, number | null>>>({
+    express: null,
+    regular: null,
+  });
+  /** Last integer minutes shown — hysteresis against 4↔5 flicker. */
+  const displayedEta = useRef<Partial<Record<ShuttleKey, number | null>>>({
     express: null,
     regular: null,
   });
@@ -336,7 +343,12 @@ export default function HomePage() {
           {(["express", "regular"] as ShuttleKey[]).map((key) => {
             if (focus !== "both" && focus !== key) return null;
             const s = byKey.get(key);
-            const board = boardForShuttle(s, holdSlots.current[key] ?? null);
+            const board = boardForShuttle(
+              s,
+              holdSlots.current[key] ?? null,
+              displayedEta.current[key] ?? null,
+            );
+            displayedEta.current[key] = board.etaMin;
             return (
               <section key={key} className={styles.roll}>
                 <div className={styles.rollHead}>

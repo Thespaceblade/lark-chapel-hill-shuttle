@@ -13,6 +13,7 @@ import {
 import L from "leaflet";
 import type { FleetVehicle, LiveShuttle, ShuttleKey } from "@/lib/shuttles";
 import { SHUTTLES, vehicleLabel } from "@/lib/shuttles";
+import { isLatePickup } from "@/lib/schedule";
 import "leaflet/dist/leaflet.css";
 import styles from "./ShuttleMap.module.css";
 
@@ -649,9 +650,11 @@ export default function ShuttleMap({
                 {s.atLark ? (
                   <>
                     <br />
-                    {holdSlots?.[s.key] != null
-                      ? "Holding for scheduled departure"
-                      : "At Lark"}
+                    {s.larkSchedule && isLatePickup(s.larkSchedule)
+                      ? "Boarding · leaving shortly"
+                      : holdSlots?.[s.key] != null
+                        ? "Holding for scheduled departure"
+                        : "At Lark"}
                   </>
                 ) : s.nextStop ? (
                   <>

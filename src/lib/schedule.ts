@@ -14,6 +14,17 @@ export const LARK_SCHEDULE: Record<
 /** Still treat as "departing now" this long after a slot. */
 export const LARK_DEPARTURE_GRACE_MIN = 2;
 
+/**
+ * Missed the clock slot by this much → board and leave, don't hold for the
+ * next :00/:15/:30/:45. From history dwells (1–12 min late, next slot still
+ * >8 min away): median ~2 min, p75 ~3 min. Use 3 so the countdown is not
+ * optimistic. Express arrivals 9–12 min late usually wait for the next
+ * 15-min slot instead — see LATE_ARRIVAL_MIN_UNTIL_NEXT_MIN.
+ */
+export const LATE_ARRIVAL_MAX_MIN = 12;
+export const LATE_ARRIVAL_HOLD_MIN = 3;
+export const LATE_ARRIVAL_MIN_UNTIL_NEXT_MIN = 8;
+
 /** Geofence around the Lark curb pin. */
 export const AT_LARK_RADIUS_M = 75;
 
@@ -121,12 +132,42 @@ export function isAtLark(
   return distanceM({ lat, lon }, LARK_STOP) <= radiusM;
 }
 
+/** Missed the last slot, but the next one is still far enough to skip. */
+export function isLatePickup(snap: {
+  minutesSincePrev: number;
+  minutesUntilNext: number;
+}): boolean {
+  return (
+    snap.minutesSincePrev > LARK_DEPARTURE_GRACE_MIN &&
+    snap.minutesSincePrev <= LATE_ARRIVAL_MAX_MIN &&
+    snap.minutesUntilNext > LATE_ARRIVAL_MIN_UNTIL_NEXT_MIN
+  );
+}
+
+/**
+ * Clock slot (or now + boarding dwell) to hold for when the bus first
+ * enters the Lark geofence.
+ */
+export function suggestedHoldSlotMin(
+  snap: LarkScheduleSnapshot,
+  now: Date = new Date(),
+): number {
+  if (snap.minutesSincePrev <= LARK_DEPARTURE_GRACE_MIN) {
+    return snap.prevSlotMin;
+  }
+  if (isLatePickup(snap)) {
+    const { minutes, second } = chapelHillClock(now);
+    return minutes + second / 60 + LATE_ARRIVAL_HOLD_MIN;
+  }
+  return snap.nextSlotMin;
+}
+
 /**
  * Board status while geofenced at Lark.
  *
- * `holdSlotMin` is the scheduled slot we started holding for when the
- * shuttle first arrived (tracked client-side). If omitted, falls back to
- * the upcoming clock slot (fine for early waits; late holds need the lock).
+ * `holdSlotMin` is the slot we started holding for when the shuttle first
+ * arrived (tracked client-side). If omitted, uses {@link suggestedHoldSlotMin}
+ * so a 1–12 min late Regular does not jump to the next :00/:30.
  */
 export function larkHoldBoard(
   snap: LarkScheduleSnapshot,
@@ -137,35 +178,48 @@ export function larkHoldBoard(
   etaMin: number | null;
   departAtLabel: string | null;
   headwayMin: number;
+  latePickup: boolean;
 } {
   const { minutes, second } = chapelHillClock(now);
   const nowMin = minutes + second / 60;
-  const target = holdSlotMin ?? snap.nextSlotMin;
+  const latePickup = isLatePickup(snap);
+  const target = holdSlotMin ?? suggestedHoldSlotMin(snap, now);
   const until = target - nowMin;
-  // Handle target on previous day wrap rarely needed within a dwell.
 
   if (until <= LARK_DEPARTURE_GRACE_MIN && until >= -LARK_DEPARTURE_GRACE_MIN) {
     return {
       mode: until > 0 ? "departing_lark" : "departing_lark_now",
       etaMin: Math.max(0, Math.ceil(until)),
-      departAtLabel: formatSlotLabel(target),
+      departAtLabel: latePickup ? null : formatSlotLabel(target),
       headwayMin: snap.headwayMin,
+      latePickup,
     };
   }
 
   if (until < -LARK_DEPARTURE_GRACE_MIN) {
+    if (latePickup) {
+      return {
+        mode: "departing_lark_now",
+        etaMin: 0,
+        departAtLabel: null,
+        headwayMin: snap.headwayMin,
+        latePickup: true,
+      };
+    }
     return {
       mode: "lark_unscheduled",
       etaMin: null,
       departAtLabel: null,
       headwayMin: snap.headwayMin,
+      latePickup: false,
     };
   }
 
   return {
     mode: "departing_lark",
     etaMin: Math.max(0, Math.ceil(until)),
-    departAtLabel: formatSlotLabel(target),
+    departAtLabel: latePickup ? null : formatSlotLabel(target),
     headwayMin: snap.headwayMin,
+    latePickup,
   };
 }

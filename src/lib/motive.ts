@@ -353,15 +353,14 @@ export async function fetchLiveBoard(): Promise<{
       const homeRaw = byVehicle.get(usualVehicle);
       if (!homeInf || !homeRaw) return emptyService(service);
 
+      // Usual bus is on the other line — this route simply has no bus.
+      // Don't say "on Regular" on the Express board (or vice versa).
       if (
         homeInf.status === "in_service" &&
         homeInf.inferredService &&
         homeInf.inferredService !== service
       ) {
-        const other = homeInf.inferredService;
-        return buildServiceShuttle(other, homeRaw, homeInf.statusReason, {
-          divertedFrom: service,
-        });
+        return emptyService(service);
       }
 
       if (

@@ -5,8 +5,9 @@ import dynamic from "next/dynamic";
 import type { FleetVehicle, LiveShuttle, ShuttleKey } from "@/lib/shuttles";
 import { SHUTTLES } from "@/lib/shuttles";
 import {
-  LARK_DEPARTURE_GRACE_MIN,
+  LATE_ARRIVAL_HOLD_MIN,
   larkHoldBoard,
+  suggestedHoldSlotMin,
   type LarkScheduleSnapshot,
 } from "@/lib/schedule";
 import { displayEtaMinutes } from "@/lib/loop";
@@ -125,9 +126,11 @@ function boardForShuttle(
       name: "Lark Chapel Hill",
       etaMin: hold.etaMin,
       detail: [
-        hold.departAtLabel
-          ? `Scheduled ${hold.departAtLabel} · every ${hold.headwayMin} min`
-          : `Every ${hold.headwayMin} min`,
+        hold.latePickup
+          ? `Boarding · typically ~${LATE_ARRIVAL_HOLD_MIN} min when late`
+          : hold.departAtLabel
+            ? `Scheduled ${hold.departAtLabel} · every ${hold.headwayMin} min`
+            : `Every ${hold.headwayMin} min`,
         s.assignmentNote,
       ]
         .filter(Boolean)
@@ -240,15 +243,9 @@ export default function HomePage() {
               continue;
             }
             if (prev == null && s.larkSchedule) {
-              // First sample inside Lark: hold for the upcoming clock slot,
-              // unless we're inside the grace window of the slot that just
-              // passed (departing now).
-              const snap = s.larkSchedule;
-              const target =
-                snap.minutesSincePrev <= LARK_DEPARTURE_GRACE_MIN
-                  ? snap.prevSlotMin
-                  : snap.nextSlotMin;
-              holdSlots.current[s.key] = target;
+              holdSlots.current[s.key] = suggestedHoldSlotMin(
+                s.larkSchedule as LarkScheduleSnapshot,
+              );
               holdChanged = true;
             }
           }

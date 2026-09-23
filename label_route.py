@@ -151,9 +151,16 @@ def raw_geometry_label(
             reason=f"shared_clearer:{key}",
         )
 
-    home = vehicle_key if vehicle_key in ROUTE_CANDIDATES else (
-        "express" if e_off <= r_off else "regular"
-    )
+    # Soft morning home for Motive vehicles 1/2; legacy express/regular keys
+    # keep identity. Never write a vehicle id into route_key.
+    if vehicle_key in ROUTE_CANDIDATES:
+        home = vehicle_key
+    elif vehicle_key == "1":
+        home = "express"
+    elif vehicle_key == "2":
+        home = "regular"
+    else:
+        home = "express" if e_off <= r_off else "regular"
     off = e_off if home == "express" else r_off
     return PingLabel(
         route_key=home,

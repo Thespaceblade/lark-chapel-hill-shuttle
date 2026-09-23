@@ -10,7 +10,8 @@ import {
   type ShuttleKey,
   type VehicleKey,
 } from "./shuttles";
-import { RouteLoop, etaMinutes, parseSpeedMph } from "./loop";
+import { RouteLoop, etaMinutes, parseSpeedMph, smoothEtaMinutes } from "./loop";
+import type { EtaSmoothState } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
 import { isAtLark, larkScheduleSnapshot, distanceM, AT_STOP_RADIUS_M } from "./schedule";
@@ -50,6 +51,9 @@ type RawVehicle = {
   compass: string | null;
   locatedAt: string | null;
 };
+
+/** Per board-line ETA memory so brief spikes do not flash on /api/live. */
+const etaSmoothByService = new Map<string, EtaSmoothState>();
 
 function getLoop(key: ShuttleKey): RouteLoop {
   const route = routesData[key] as {
@@ -237,13 +241,19 @@ function buildServiceShuttle(
     if (!atLark) {
       const nxt = loop.nextStop(proj);
       if (nxt) {
+        const boardKey = diverted ? opts!.divertedFrom! : service;
+        const rawEta = etaMinutes(nxt.alongM, raw.speedMph, raw.state);
+        const smoothed = smoothEtaMinutes(
+          rawEta,
+          nxt.key,
+          etaSmoothByService.get(boardKey),
+        );
+        etaSmoothByService.set(boardKey, smoothed);
         nextStop = {
           key: nxt.key,
           name: nxt.name,
           alongM: Math.round(nxt.alongM),
-          etaMin: Math.round(
-            etaMinutes(nxt.alongM, raw.speedMph, raw.state) * 10,
-          ) / 10,
+          etaMin: Math.round(smoothed.etaMin * 10) / 10,
         };
       }
     }

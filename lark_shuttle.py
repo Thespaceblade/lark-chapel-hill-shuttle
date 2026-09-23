@@ -752,11 +752,11 @@ def export_history_payload(conn: sqlite3.Connection) -> dict[str, Any]:
             """
         )
     ]
-    by_shuttle: dict[str, int] = {}
+    by_vehicle: dict[str, int] = {}
     by_route: dict[str, int] = {}
     train_rows = []
     for r in rows:
-        by_shuttle[r["shuttle_key"]] = by_shuttle.get(r["shuttle_key"], 0) + 1
+        by_vehicle[r["shuttle_key"]] = by_vehicle.get(r["shuttle_key"], 0) + 1
         rk = r.get("route_key") or "(none)"
         by_route[rk] = by_route.get(rk, 0) + 1
         if r.get("train_ok"):
@@ -768,7 +768,11 @@ def export_history_payload(conn: sqlite3.Connection) -> dict[str, Any]:
         "train_ok_count": len(train_rows),
         "prediction_count": len(predictions),
         "arrived_prediction_count": len(arrived),
-        "by_shuttle": by_shuttle,
+        "notes": (
+            "shuttle_key = Motive vehicle (1/2); "
+            "route_key = passenger service (express/regular)."
+        ),
+        "by_vehicle": by_vehicle,
         "by_route": by_route,
         "pings": rows,
         "train_pings": train_rows,
@@ -1084,16 +1088,24 @@ def _normalize_shuttle_key(key: str | None) -> str | None:
     """Normalize a vehicle id for history lookup (1/2)."""
     if not key or key == "all":
         return key
+    from route_loop import normalize_vehicle_key
+
+    return normalize_vehicle_key(key)
+
+
+def _normalize_route_key(key: str | None) -> str | None:
+    """Normalize passenger-service route key (express/regular)."""
+    if not key:
+        return key
+    from route_loop import normalize_route_key, ROUTE_CANDIDATES
+
     raw = key.lower().strip()
-    aliases = {
-        "1": "1",
-        "shuttle1": "1",
-        "express": "1",
-        "2": "2",
-        "shuttle2": "2",
-        "regular": "2",
-    }
-    return aliases.get(raw, raw)
+    if raw == "all":
+        return raw
+    rk = normalize_route_key(raw)
+    if rk not in ROUTE_CANDIDATES:
+        raise SystemExit(f"--on-route must be express or regular, got {key!r}")
+    return rk
 
 
 def cmd_match(args: argparse.Namespace) -> int:
@@ -1107,11 +1119,11 @@ def cmd_match(args: argparse.Namespace) -> int:
     if not db_path.exists():
         raise SystemExit(f"No history DB at {db_path}. Run: python3 lark_shuttle.py log")
 
-    vehicle_key = _normalize_shuttle_key(args.shuttle) or "regular"
+    vehicle_key = _normalize_shuttle_key(args.shuttle) or "1"
     if vehicle_key == "all":
-        raise SystemExit("match needs a vehicle: express or regular")
+        raise SystemExit("match needs a vehicle: 1 or 2")
 
-    on_route = _normalize_shuttle_key(getattr(args, "on_route", None))
+    on_route = _normalize_route_key(getattr(args, "on_route", None))
     if on_route == "all":
         raise SystemExit("--on-route must be express or regular")
 
@@ -1154,13 +1166,15 @@ def cmd_match(args: argparse.Namespace) -> int:
         pings=pings,
         routes_path=routes_path,
     )
-    assignment_note = None
-    if route_key != vehicle_key:
+    from route_loop import home_route_for_vehicle
+
+    home = home_route_for_vehicle(vehicle_key)
+    if route_key != home:
         assignment_note = (
-            f"Usually {vehicle_key} · projecting onto {route_key} loop"
+            f"Shuttle {vehicle_key} · usual {home} · projecting onto {route_key}"
         )
-    elif assign_meta.get("mode") == "auto":
-        assignment_note = f"Auto: {vehicle_key} on home {route_key} loop"
+    else:
+        assignment_note = f"Shuttle {vehicle_key} · running {route_key}"
 
     try:
         loop = RouteLoop.from_routes_file(route_key, routes_path)

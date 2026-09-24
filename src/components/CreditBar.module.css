@@ -1,0 +1,119 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin: 0.9rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 3px solid #fff;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  color: #fff;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.link:hover,
+.link:focus-visible {
+  color: #fff;
+}
+
+.link:focus-visible {
+  outline: 2px solid #fccc0a;
+  outline-offset: 3px;
+}
+
+.label,
+.name {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a7a9ac;
+  white-space: nowrap;
+}
+
+.name {
+  color: #fff;
+}
+
+.portrait {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  background: #222;
+  flex-shrink: 0;
+}
+
+.icon {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.rule {
+  width: 1px;
+  align-self: stretch;
+  background: #fff;
+  opacity: 0.35;
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .bar {
+    margin: 0.7rem 0 0;
+    padding-top: 0.55rem;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    border-top-width: 2px;
+  }
+
+  .label,
+  .name {
+    display: none;
+  }
+
+  .rule {
+    display: none;
+  }
+
+  .link {
+    width: 2.15rem;
+    height: 2.15rem;
+    justify-content: center;
+    border: 1.5px solid #fff;
+    border-radius: 50%;
+  }
+
+  .portrait {
+    width: 1.55rem;
+    height: 1.55rem;
+    border-width: 0;
+  }
+
+  .icon {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+}
+
+@media (max-width: 720px) and (max-height: 720px) {
+  .bar {
+    margin: 0.5rem 0 0;
+    padding-top: 0.4rem;
+  }
+
+  .link {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+}

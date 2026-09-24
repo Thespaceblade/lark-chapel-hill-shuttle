@@ -153,11 +153,15 @@ export class RouteLoop {
    * Snap a position onto the loop. When `bearingDeg` is set (Motive heading),
    * prefer segments traveling the same direction — critical where outbound and
    * return share the same road near Memorial / Columbia.
+   *
+   * `lastSM` keeps the snap on the same lap when the polyline overlaps itself
+   * (Express homebound otherwise jumps onto the outbound Memorial approach).
    */
   project(
     lat: number,
     lon: number,
     bearingDeg: number | null = null,
+    lastSM: number | null = null,
   ): Projection {
     const p = toXy(lat, lon, this.lat0, this.lon0);
     let bestScore = Infinity;
@@ -185,8 +189,16 @@ export class RouteLoop {
       if (bearingDeg != null && Number.isFinite(bearingDeg) && bearingDeg >= 0 && seg2 > 1e-6) {
         const segBrg = segmentBearingDeg(a.x, a.y, b.x, b.y);
         const diff = bearingDiffDeg(segBrg, bearingDeg);
-        // ~30 m penalty at opposite heading — breaks outbound/return ties.
-        score = d2 + (diff / 180) ** 2 * 30 ** 2;
+        // Opposite heading must lose even if that copy of the road is a few
+        // meters closer — Express retraces the same curb past Memorial.
+        score += (diff / 180) ** 2 * 90 ** 2;
+      }
+      if (lastSM != null && Number.isFinite(lastSM)) {
+        const candSM = this.cum[i] + t * (this.cum[i + 1] - this.cum[i]);
+        let dAlong = Math.abs(candSM - lastSM);
+        dAlong = Math.min(dAlong, this.lengthM - dAlong);
+        // Tie-break only — cap so a wrong lock cannot beat opposite heading.
+        score += Math.min(dAlong / 6, 25) ** 2;
       }
       if (score < bestScore) {
         bestScore = score;
@@ -214,7 +226,9 @@ export class RouteLoop {
     proj: Projection,
   ): { key: string; name: string; alongM: number } | null {
     if (!this.stops.length) return null;
-    const atStopM = 35;
+    // Only treat as "already here" once we're on top of the pin. A 35 m
+    // skip made Express flip to Memorial on the last block into Lark.
+    const atStopM = 12;
     let best: { key: string; name: string; alongM: number } | null = null;
     let bestAlong = Infinity;
 

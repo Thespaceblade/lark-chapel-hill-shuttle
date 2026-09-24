@@ -55,6 +55,26 @@ type RawVehicle = {
 /** Per board-line ETA memory so brief spikes do not flash on /api/live. */
 const etaSmoothByService = new Map<string, EtaSmoothState>();
 
+/** Last snap on the published loop — keeps Express from flipping outbound. */
+const projHintByVehicle = new Map<
+  VehicleKey,
+  { sM: number; lat: number; lon: number }
+>();
+
+function motionBearingDeg(
+  from: { lat: number; lon: number },
+  to: { lat: number; lon: number },
+): number {
+  const lat1 = (from.lat * Math.PI) / 180;
+  const lat2 = (to.lat * Math.PI) / 180;
+  const dlon = ((to.lon - from.lon) * Math.PI) / 180;
+  const y = Math.sin(dlon) * Math.cos(lat2);
+  const x =
+    Math.cos(lat1) * Math.sin(lat2) -
+    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dlon);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
 function getLoop(key: ShuttleKey): RouteLoop {
   const route = routesData[key] as {
     line: [number, number][];
@@ -226,7 +246,23 @@ function buildServiceShuttle(
       raw.lon != null &&
       nearPublishedStop(raw.lat, raw.lon, loop.stops));
   const snap = larkScheduleSnapshot(service);
-  const bearing = normalizeBearing(raw.bearing);
+  const hint = projHintByVehicle.get(raw.vehicleKey);
+  const hintFresh =
+    hint != null &&
+    raw.lat != null &&
+    raw.lon != null &&
+    distanceM({ lat: raw.lat, lon: raw.lon }, hint) <= 350;
+  let bearing = normalizeBearing(raw.bearing);
+  if (
+    bearing == null &&
+    hintFresh &&
+    hint &&
+    raw.lat != null &&
+    raw.lon != null &&
+    distanceM({ lat: raw.lat, lon: raw.lon }, hint) >= 8
+  ) {
+    bearing = motionBearingDeg(hint, { lat: raw.lat, lon: raw.lon });
+  }
   let nextStop: LiveShuttle["nextStop"] = null;
   let loopFrac: number | null = null;
   let offLoopM: number | null = null;
@@ -235,7 +271,17 @@ function buildServiceShuttle(
   // Diverted boards must not mirror the other line's next-stop / Lark ETA —
   // that duplicated identical Sitterson timers on Express + Regular.
   if (!diverted && raw.lat != null && raw.lon != null) {
-    const proj = loop.project(raw.lat, raw.lon, bearing);
+    const proj = loop.project(
+      raw.lat,
+      raw.lon,
+      bearing,
+      hintFresh ? hint!.sM : null,
+    );
+    projHintByVehicle.set(raw.vehicleKey, {
+      sM: proj.sM,
+      lat: raw.lat,
+      lon: raw.lon,
+    });
     loopFrac = proj.loopFrac;
     offLoopM = Math.round(proj.offsetM * 10) / 10;
     if (!atLark) {

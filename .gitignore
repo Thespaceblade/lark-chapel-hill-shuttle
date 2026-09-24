@@ -12,6 +12,7 @@ node_modules/
 out/
 *.png
 !public/lark-mark.png
+!public/jasonindata.png
 !src/app/icon.png
 !src/app/apple-icon.png
 *.pyc

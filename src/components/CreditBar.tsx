@@ -30,17 +30,17 @@ export default function CreditBar() {
         href={JASONINDATA_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Made by JasonInData"
+        aria-label="Made by me, Jason In Data"
       >
-        <span className={styles.label}>Made by</span>
+        <span className={styles.label}>Made by me</span>
         <Image
           className={styles.portrait}
           src="/jasonindata.png"
           alt=""
-          width={28}
-          height={28}
+          width={14}
+          height={14}
         />
-        <span className={styles.name}>JasonInData</span>
+        <span className={styles.name}>Jason In Data</span>
       </a>
       <span className={styles.rule} aria-hidden />
       <a
@@ -50,7 +50,9 @@ export default function CreditBar() {
         rel="noopener noreferrer"
         aria-label="Want to contribute? Open the GitHub repo"
       >
-        <span className={styles.label}>Want to contribute?</span>
+        <span className={`${styles.label} ${styles.contributeLabel}`}>
+          Want to contribute?
+        </span>
         <GitHubMark />
       </a>
     </footer>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/schedule";
 import { displayEtaMinutes } from "@/lib/loop";
 import LarkMark from "@/components/LarkMark";
+import CreditBar from "@/components/CreditBar";
 import styles from "./page.module.css";
 
 const ShuttleMap = dynamic(() => import("@/components/ShuttleMap"), {
@@ -400,6 +401,8 @@ export default function HomePage() {
         </div>
 
         {error ? <p className={styles.error}>{error}</p> : null}
+
+        <CreditBar />
       </aside>
     </main>
   );

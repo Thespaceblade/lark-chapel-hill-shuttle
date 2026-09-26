@@ -263,24 +263,51 @@ export function etaMinutes(
   alongM: number,
   speedMph: number | null,
   state: string | null = null,
+  opts?: { routeKey?: string; stopKey?: string },
 ): number {
   const mph = effectiveSpeedMph(speedMph, state);
   const mps = mph * 0.44704;
-  return alongM / mps / 60;
+  let minutes = mps > 0 ? alongM / mps / 60 : ETA_MAX_MINUTES;
+  minutes += stopPadMinutes(opts?.routeKey, opts?.stopKey);
+  // Long remaining arcs under-predict in the arrived set (lights / shared corridor).
+  if (alongM > 1000) minutes += 1.2;
+  else if (alongM > 600) minutes += 0.4;
+  return Math.max(0, Math.min(ETA_MAX_MINUTES, minutes));
 }
 
 /**
  * Campus-shuttle speed for ETA. Instant Motive speed is noisy:
- * idle → typical cruise; slow → trust live; fast → clamp + blend.
+ * idle → typical cruise; crawl → floor (never divide by 2 mph); fast → clamp.
  */
-export const ETA_TYPICAL_MPH = 13;
+export const ETA_TYPICAL_MPH = 12;
+export const ETA_MIN_MPH = 8;
 export const ETA_MAX_MPH = 18;
+/** Hard ceiling so next-stop never flashes 20–30 min from a crawl snap. */
+export const ETA_MAX_MINUTES = 12;
+
+/**
+ * Additive dwell from arrived prediction bias (partial; avoids overfit).
+ * Keys: `${routeKey}/${stopKey}`.
+ */
+export const ETA_STOP_PAD_MIN: Record<string, number> = {
+  "regular/memorial": 2.5,
+  "express/memorial": 1.0,
+  "regular/sitterson": 0.3,
+};
+
+export function stopPadMinutes(
+  routeKey: string | null | undefined,
+  stopKey: string | null | undefined,
+): number {
+  if (!routeKey || !stopKey) return 0;
+  return ETA_STOP_PAD_MIN[`${routeKey}/${stopKey}`] ?? 0;
+}
 
 /** Soft caps on how fast a displayed ETA may move between polls. */
-export const ETA_SMOOTH_MAX_UP_MIN = 1.1;
+export const ETA_SMOOTH_MAX_UP_MIN = 0.75;
 export const ETA_SMOOTH_MAX_DOWN_MIN = 2.25;
 /** Believe drops (approaching) faster than spikes (crawl / snap). */
-export const ETA_SMOOTH_ALPHA_UP = 0.22;
+export const ETA_SMOOTH_ALPHA_UP = 0.18;
 export const ETA_SMOOTH_ALPHA_DOWN = 0.48;
 
 export type EtaSmoothState = {
@@ -299,7 +326,7 @@ export function smoothEtaMinutes(
   prev: EtaSmoothState | null | undefined,
   nowMs: number = Date.now(),
 ): EtaSmoothState {
-  const raw = Math.max(0, rawEtaMin);
+  const raw = Math.max(0, Math.min(ETA_MAX_MINUTES, rawEtaMin));
   if (!prev || prev.stopKey !== stopKey) {
     return { stopKey, etaMin: raw, atMs: nowMs };
   }
@@ -312,7 +339,10 @@ export function smoothEtaMinutes(
   const stepped = prev.etaMin + delta;
   const alpha =
     stepped >= prev.etaMin ? ETA_SMOOTH_ALPHA_UP : ETA_SMOOTH_ALPHA_DOWN;
-  const etaMin = Math.max(0, alpha * stepped + (1 - alpha) * prev.etaMin);
+  const etaMin = Math.max(
+    0,
+    Math.min(ETA_MAX_MINUTES, alpha * stepped + (1 - alpha) * prev.etaMin),
+  );
   return { stopKey, etaMin, atMs: nowMs };
 }
 
@@ -343,7 +373,8 @@ export function effectiveSpeedMph(
     return ETA_TYPICAL_MPH;
   }
 
-  const capped = Math.min(ETA_MAX_MPH, live);
+  // Floor crawls — a 2 mph Motive blip must not become a 25 min ETA.
+  const capped = Math.max(ETA_MIN_MPH, Math.min(ETA_MAX_MPH, live));
   if (capped < ETA_TYPICAL_MPH) return capped;
   return 0.55 * capped + 0.45 * ETA_TYPICAL_MPH;
 }

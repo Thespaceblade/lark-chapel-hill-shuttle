@@ -1,8 +1,8 @@
 """Stable ETA + prediction/outcome logging for training.
 
-Instantaneous Motive speed is noisy (lights, crawls). We clamp to a realistic
-cruise band, then temporally smooth so brief spikes do not dominate the
-logged / displayed ETA. Predictions resolve when the vehicle reaches the stop.
+Instantaneous Motive speed is noisy (lights, crawls). We floor crawl speed,
+add stop dwell from arrived bias, cap next-stop ETA, then temporally smooth
+so brief spikes do not dominate. Predictions resolve when the vehicle arrives.
 """
 
 from __future__ import annotations
@@ -16,20 +16,27 @@ from route_loop import RouteLoop
 # Display / training ETA uses a clamped cruise speed, not raw GPS crawl.
 ETA_FALLBACK_MPH = 12.0
 ETA_MIN_MPH = 8.0
-ETA_MAX_MPH = 28.0
-ETA_MAX_MINUTES = 40.0
+ETA_MAX_MPH = 18.0
+ETA_MAX_MINUTES = 12.0
 # Arrivals slower than this are a later lap / stale open pred — not a valid outcome.
-MAX_ARRIVAL_AGE_MIN = ETA_MAX_MINUTES + 10.0
+MAX_ARRIVAL_AGE_MIN = 50.0
 AT_STOP_ARRIVE_M = 45.0
-MODEL_VERSION = "eta_smooth_v1"
+MODEL_VERSION = "eta_cal_v2"
 
 _SPEED_RE = re.compile(r"([\d.]+)")
 
 # Temporal smoothing — brief spikes (crawl / GPS snap) should not dominate.
-ETA_SMOOTH_MAX_UP_MIN = 1.1
+ETA_SMOOTH_MAX_UP_MIN = 0.75
 ETA_SMOOTH_MAX_DOWN_MIN = 2.25
-ETA_SMOOTH_ALPHA_UP = 0.22
+ETA_SMOOTH_ALPHA_UP = 0.18
 ETA_SMOOTH_ALPHA_DOWN = 0.48
+
+# Additive dwell from arrived prediction bias (partial fit).
+ETA_STOP_PAD_MIN: dict[tuple[str, str], float] = {
+    ("regular", "memorial"): 2.5,
+    ("express", "memorial"): 1.0,
+    ("regular", "sitterson"): 0.3,
+}
 
 # In-process memory: vehicle_key → {stop, eta, at}
 _eta_smooth: dict[str, dict[str, Any]] = {}
@@ -61,16 +68,29 @@ def effective_speed_mph(
     return max(min_mph, min(max_mph, mph))
 
 
+def stop_pad_minutes(route_key: str | None, stop_key: str | None) -> float:
+    if not route_key or not stop_key:
+        return 0.0
+    return float(ETA_STOP_PAD_MIN.get((route_key, stop_key), 0.0))
+
+
 def eta_minutes(
     along_m: float,
     raw_mph: float | None,
     *,
     entity_state: str | None = None,
+    route_key: str | None = None,
+    stop_key: str | None = None,
 ) -> tuple[float, float]:
     """Return (eta_min, speed_used_mph)."""
     used = effective_speed_mph(raw_mph, entity_state=entity_state)
     mps = used * 0.44704
     minutes = (along_m / mps / 60.0) if mps > 0 else ETA_MAX_MINUTES
+    minutes += stop_pad_minutes(route_key, stop_key)
+    if along_m > 1000:
+        minutes += 1.2
+    elif along_m > 600:
+        minutes += 0.4
     minutes = max(0.0, min(ETA_MAX_MINUTES, minutes))
     return round(minutes, 2), used
 
@@ -84,7 +104,7 @@ def smooth_eta_minutes(
 ) -> float:
     """Rate-limit + asymmetric EMA so short-lived extremes do not flash."""
     now = now or datetime.now(timezone.utc)
-    raw = max(0.0, float(raw_eta_min))
+    raw = max(0.0, min(ETA_MAX_MINUTES, float(raw_eta_min)))
     prev = _eta_smooth.get(vehicle_key)
     if not prev or prev.get("stop_key") != stop_key:
         _eta_smooth[vehicle_key] = {
@@ -105,7 +125,7 @@ def smooth_eta_minutes(
     delta = max(-max_down, min(max_up, raw - prev_eta))
     stepped = prev_eta + delta
     alpha = ETA_SMOOTH_ALPHA_UP if stepped >= prev_eta else ETA_SMOOTH_ALPHA_DOWN
-    eta = max(0.0, alpha * stepped + (1.0 - alpha) * prev_eta)
+    eta = max(0.0, min(ETA_MAX_MINUTES, alpha * stepped + (1.0 - alpha) * prev_eta))
     _eta_smooth[vehicle_key] = {
         "stop_key": stop_key,
         "eta_min": eta,
@@ -486,7 +506,11 @@ def maybe_record_prediction(
             return {"resolved": resolved, "prediction": {"id": last["id"], "deduped": True}}
 
     eta_raw, used = eta_minutes(
-        float(nxt["along_m"]), raw_mph, entity_state=entity_state
+        float(nxt["along_m"]),
+        raw_mph,
+        entity_state=entity_state,
+        route_key=route_key,
+        stop_key=str(nxt["key"]),
     )
     located_dt = parse_iso(located_at) or datetime.now(timezone.utc)
     eta_min = smooth_eta_minutes(

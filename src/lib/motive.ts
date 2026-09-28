@@ -288,7 +288,10 @@ function buildServiceShuttle(
       const nxt = loop.nextStop(proj);
       if (nxt) {
         const boardKey = diverted ? opts!.divertedFrom! : service;
-        const rawEta = etaMinutes(nxt.alongM, raw.speedMph, raw.state);
+        const rawEta = etaMinutes(nxt.alongM, raw.speedMph, raw.state, {
+          routeKey: service,
+          stopKey: nxt.key,
+        });
         const smoothed = smoothEtaMinutes(
           rawEta,
           nxt.key,

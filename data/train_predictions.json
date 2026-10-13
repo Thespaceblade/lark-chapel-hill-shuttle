@@ -1,5 +1,5 @@
 {
-  "exported_at": "2026-09-25T17:32:14Z",
+  "exported_at": "2026-10-13T12:25:27Z",
   "ping_count": 558,
   "notes": "Resolved predictions only (arrived). Features at prediction time + actual_min / error_min for supervised ETA training.",
   "predictions": [

@@ -40,7 +40,17 @@ export type LiveShuttle = {
     name: string;
     alongM: number;
     etaMin: number | null;
+    /** Slightly early ETA for push/SMS (etaMin + buffer). */
+    notifyEtaMin: number | null;
   } | null;
+  /** Full remaining itinerary this lap (next stop first). */
+  upcomingStops: {
+    key: string;
+    name: string;
+    alongM: number;
+    etaMin: number | null;
+    notifyEtaMin: number | null;
+  }[];
   atLark: boolean;
   atStop: boolean;
   rideable: boolean;

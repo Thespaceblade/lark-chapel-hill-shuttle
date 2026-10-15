@@ -10,7 +10,13 @@ import {
   type ShuttleKey,
   type VehicleKey,
 } from "./shuttles";
-import { RouteLoop, etaMinutes, parseSpeedMph, smoothEtaMinutes } from "./loop";
+import {
+  RouteLoop,
+  etaMinutes,
+  notificationEtaMinutes,
+  parseSpeedMph,
+  smoothEtaMinutes,
+} from "./loop";
 import type { EtaSmoothState } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
@@ -53,7 +59,12 @@ type RawVehicle = {
 };
 
 /** Per board-line ETA memory so brief spikes do not flash on /api/live. */
-const etaSmoothByService = new Map<string, EtaSmoothState>();
+/** Per board-line + stop smooth state so full-route ETAs don't clobber each other. */
+const etaSmoothByServiceStop = new Map<string, EtaSmoothState>();
+
+function etaSmoothKey(boardKey: string, stopKey: string): string {
+  return `${boardKey}:${stopKey}`;
+}
 
 /** Last snap on the published loop — keeps Express from flipping outbound. */
 const projHintByVehicle = new Map<
@@ -163,6 +174,7 @@ function emptyService(key: ShuttleKey): LiveShuttle {
     locatedAt: null,
     mapsUrl: null,
     nextStop: null,
+    upcomingStops: [],
     atLark: false,
     atStop: false,
     rideable: false,
@@ -202,6 +214,7 @@ function outOfServiceBoard(
         ? `https://www.google.com/maps?q=${raw.lat},${raw.lon}`
         : null,
     nextStop: null,
+    upcomingStops: [],
     atLark,
     atStop: atLark,
     rideable: false,
@@ -264,6 +277,7 @@ function buildServiceShuttle(
     bearing = motionBearingDeg(hint, { lat: raw.lat, lon: raw.lon });
   }
   let nextStop: LiveShuttle["nextStop"] = null;
+  let upcomingStops: LiveShuttle["upcomingStops"] = [];
   let loopFrac: number | null = null;
   let offLoopM: number | null = null;
   const diverted = opts?.divertedFrom != null;
@@ -285,26 +299,32 @@ function buildServiceShuttle(
     loopFrac = proj.loopFrac;
     offLoopM = Math.round(proj.offsetM * 10) / 10;
     if (!atLark) {
-      const nxt = loop.nextStop(proj);
-      if (nxt) {
-        const boardKey = diverted ? opts!.divertedFrom! : service;
-        const rawEta = etaMinutes(nxt.alongM, raw.speedMph, raw.state, {
+      const ahead = loop.stopsAhead(proj);
+      const boardKey = diverted ? opts!.divertedFrom! : service;
+      upcomingStops = ahead.map((stop, i) => {
+        const intermediateStopKeys = ahead.slice(0, i).map((s) => s.key);
+        const rawEta = etaMinutes(stop.alongM, raw.speedMph, raw.state, {
           routeKey: service,
-          stopKey: nxt.key,
+          stopKey: stop.key,
+          intermediateStopKeys,
         });
+        const sk = etaSmoothKey(boardKey, stop.key);
         const smoothed = smoothEtaMinutes(
           rawEta,
-          nxt.key,
-          etaSmoothByService.get(boardKey),
+          stop.key,
+          etaSmoothByServiceStop.get(sk),
         );
-        etaSmoothByService.set(boardKey, smoothed);
-        nextStop = {
-          key: nxt.key,
-          name: nxt.name,
-          alongM: Math.round(nxt.alongM),
-          etaMin: Math.round(smoothed.etaMin * 10) / 10,
+        etaSmoothByServiceStop.set(sk, smoothed);
+        const etaMin = Math.round(smoothed.etaMin * 10) / 10;
+        return {
+          key: stop.key,
+          name: stop.name,
+          alongM: Math.round(stop.alongM),
+          etaMin,
+          notifyEtaMin: notificationEtaMinutes(etaMin),
         };
-      }
+      });
+      nextStop = upcomingStops[0] ?? null;
     }
   }
 
@@ -327,6 +347,7 @@ function buildServiceShuttle(
         ? `https://www.google.com/maps?q=${raw.lat},${raw.lon}`
         : null,
     nextStop,
+    upcomingStops,
     atLark,
     atStop,
     rideable: !diverted,

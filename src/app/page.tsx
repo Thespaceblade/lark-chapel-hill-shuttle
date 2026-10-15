@@ -394,6 +394,24 @@ export default function HomePage() {
                       {board.detail}
                     </div>
                   ) : null}
+                  {s?.serviceStatus === "active" &&
+                  !s.atLark &&
+                  (s.upcomingStops?.length ?? 0) > 1 ? (
+                    <ul className={styles.upcomingList} aria-label="Stops ahead">
+                      {s.upcomingStops!.slice(1).map((stop) => (
+                        <li key={stop.key} className={styles.upcomingRow}>
+                          <span className={styles.upcomingName}>
+                            {stop.name}
+                          </span>
+                          <span className={styles.upcomingEta}>
+                            {stop.etaMin != null
+                              ? `${Math.round(stop.etaMin)} min`
+                              : "—"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               </section>
             );

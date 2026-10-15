@@ -10,7 +10,13 @@ import {
   type ShuttleKey,
   type VehicleKey,
 } from "./shuttles";
-import { RouteLoop, etaMinutes, parseSpeedMph, smoothEtaMinutes } from "./loop";
+import {
+  RouteLoop,
+  etaMinutes,
+  notificationEtaMinutes,
+  parseSpeedMph,
+  smoothEtaMinutes,
+} from "./loop";
 import type { EtaSmoothState } from "./loop";
 import type { Stop } from "./shuttles";
 import routesData from "../../data/intended_routes.json";
@@ -309,11 +315,13 @@ function buildServiceShuttle(
           etaSmoothByServiceStop.get(sk),
         );
         etaSmoothByServiceStop.set(sk, smoothed);
+        const etaMin = Math.round(smoothed.etaMin * 10) / 10;
         return {
           key: stop.key,
           name: stop.name,
           alongM: Math.round(stop.alongM),
-          etaMin: Math.round(smoothed.etaMin * 10) / 10,
+          etaMin,
+          notifyEtaMin: notificationEtaMinutes(etaMin),
         };
       });
       nextStop = upcomingStops[0] ?? null;

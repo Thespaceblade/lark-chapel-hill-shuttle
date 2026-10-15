@@ -22,7 +22,7 @@ ETA_MAX_MINUTES = 45.0
 # Arrivals slower than this are a later lap / stale open pred — not a valid outcome.
 MAX_ARRIVAL_AGE_MIN = 50.0
 AT_STOP_ARRIVE_M = 45.0
-MODEL_VERSION = "eta_full_v1"
+MODEL_VERSION = "eta_cal_v3"
 PRED_DEDUP_SEC = 20.0
 
 _SPEED_RE = re.compile(r"([\d.]+)")
@@ -33,12 +33,35 @@ ETA_SMOOTH_MAX_DOWN_MIN = 2.25
 ETA_SMOOTH_ALPHA_UP = 0.18
 ETA_SMOOTH_ALPHA_DOWN = 0.48
 
-# Additive dwell from arrived prediction bias (partial fit).
+# Fit from 558 arrived outcomes (data/train_predictions.json, Sep 2026).
+# Stop pads ≈ short-range residual after distance/speed.
 ETA_STOP_PAD_MIN: dict[tuple[str, str], float] = {
-    ("regular", "memorial"): 2.5,
-    ("express", "memorial"): 1.0,
-    ("regular", "sitterson"): 0.3,
+    ("regular", "memorial"): 1.0,
+    ("express", "memorial"): 0.5,
+    ("regular", "sitterson"): 0.45,
+    ("regular", "hsl"): 0.15,
 }
+
+# Extra minutes that grow with remaining distance (shared corridor / lights).
+# Keys: (route_key, stop_key) → minutes per km of along_m.
+ETA_CORRIDOR_SLOPE_MIN_PER_KM: dict[tuple[str, str], float] = {
+    ("regular", "memorial"): 2.2,
+    ("express", "memorial"): 1.5,
+    ("regular", "sitterson"): 0.3,
+    ("regular", "bschool_deck"): 0.2,
+}
+
+# Global remaining-distance additives: (max_along_m inclusive, add_min).
+ETA_DIST_ADD_BANDS: list[tuple[float, float]] = [
+    (150.0, -0.2),
+    (400.0, 0.0),
+    (800.0, 0.25),
+    (1500.0, 0.7),
+    (1e9, 1.4),
+]
+
+# Fire notify slightly early so riders aren't late to the curb.
+NOTIFY_ETA_BUFFER_MIN = 0.5
 
 # In-process memory: f"{vehicle_key}:{stop_key}" → {stop, eta, at}
 _eta_smooth: dict[str, dict[str, Any]] = {}
@@ -80,6 +103,21 @@ def stop_pad_minutes(route_key: str | None, stop_key: str | None) -> float:
     return float(ETA_STOP_PAD_MIN.get((route_key, stop_key), 0.0))
 
 
+def corridor_slope_min_per_km(
+    route_key: str | None, stop_key: str | None
+) -> float:
+    if not route_key or not stop_key:
+        return 0.0
+    return float(ETA_CORRIDOR_SLOPE_MIN_PER_KM.get((route_key, stop_key), 0.0))
+
+
+def dist_add_minutes(along_m: float) -> float:
+    for max_m, add in ETA_DIST_ADD_BANDS:
+        if along_m <= max_m:
+            return float(add)
+    return 0.0
+
+
 def eta_minutes(
     along_m: float,
     raw_mph: float | None,
@@ -91,7 +129,8 @@ def eta_minutes(
 ) -> tuple[float, float]:
     """Return (eta_min, speed_used_mph).
 
-    Pads the target stop plus any intermediate stops still ahead on this lap.
+    Pads the target stop plus any intermediate stops still ahead on this lap,
+    then applies distance-band and corridor-slope corrections from arrived data.
     """
     used = effective_speed_mph(raw_mph, entity_state=entity_state)
     mps = used * 0.44704
@@ -99,12 +138,15 @@ def eta_minutes(
     for mid_key in intermediate_stop_keys or ():
         minutes += stop_pad_minutes(route_key, mid_key)
     minutes += stop_pad_minutes(route_key, stop_key)
-    if along_m > 1000:
-        minutes += 1.2
-    elif along_m > 600:
-        minutes += 0.4
+    minutes += dist_add_minutes(along_m)
+    minutes += corridor_slope_min_per_km(route_key, stop_key) * (along_m / 1000.0)
     minutes = max(0.0, min(ETA_MAX_MINUTES, minutes))
     return round(minutes, 2), used
+
+
+def notification_eta_minutes(eta_min: float) -> float:
+    """Slightly early ETA for push/SMS so riders aren't late to the stop."""
+    return round(max(0.0, float(eta_min) + NOTIFY_ETA_BUFFER_MIN), 2)
 
 
 def smooth_eta_minutes(

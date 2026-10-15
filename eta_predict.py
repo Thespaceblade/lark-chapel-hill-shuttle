@@ -17,11 +17,13 @@ from route_loop import RouteLoop
 ETA_FALLBACK_MPH = 12.0
 ETA_MIN_MPH = 8.0
 ETA_MAX_MPH = 18.0
-ETA_MAX_MINUTES = 12.0
+# Raised so full-lap Regular ETAs are not clamped to next-stop horizons.
+ETA_MAX_MINUTES = 45.0
 # Arrivals slower than this are a later lap / stale open pred — not a valid outcome.
 MAX_ARRIVAL_AGE_MIN = 50.0
 AT_STOP_ARRIVE_M = 45.0
-MODEL_VERSION = "eta_cal_v2"
+MODEL_VERSION = "eta_full_v1"
+PRED_DEDUP_SEC = 20.0
 
 _SPEED_RE = re.compile(r"([\d.]+)")
 
@@ -38,8 +40,12 @@ ETA_STOP_PAD_MIN: dict[tuple[str, str], float] = {
     ("regular", "sitterson"): 0.3,
 }
 
-# In-process memory: vehicle_key → {stop, eta, at}
+# In-process memory: f"{vehicle_key}:{stop_key}" → {stop, eta, at}
 _eta_smooth: dict[str, dict[str, Any]] = {}
+
+
+def _smooth_key(vehicle_key: str, stop_key: str) -> str:
+    return f"{vehicle_key}:{stop_key}"
 
 
 def parse_speed_mph(speed: str | float | int | None) -> float | None:
@@ -81,11 +87,17 @@ def eta_minutes(
     entity_state: str | None = None,
     route_key: str | None = None,
     stop_key: str | None = None,
+    intermediate_stop_keys: list[str] | None = None,
 ) -> tuple[float, float]:
-    """Return (eta_min, speed_used_mph)."""
+    """Return (eta_min, speed_used_mph).
+
+    Pads the target stop plus any intermediate stops still ahead on this lap.
+    """
     used = effective_speed_mph(raw_mph, entity_state=entity_state)
     mps = used * 0.44704
     minutes = (along_m / mps / 60.0) if mps > 0 else ETA_MAX_MINUTES
+    for mid_key in intermediate_stop_keys or ():
+        minutes += stop_pad_minutes(route_key, mid_key)
     minutes += stop_pad_minutes(route_key, stop_key)
     if along_m > 1000:
         minutes += 1.2
@@ -105,9 +117,10 @@ def smooth_eta_minutes(
     """Rate-limit + asymmetric EMA so short-lived extremes do not flash."""
     now = now or datetime.now(timezone.utc)
     raw = max(0.0, min(ETA_MAX_MINUTES, float(raw_eta_min)))
-    prev = _eta_smooth.get(vehicle_key)
+    key = _smooth_key(vehicle_key, stop_key)
+    prev = _eta_smooth.get(key)
     if not prev or prev.get("stop_key") != stop_key:
-        _eta_smooth[vehicle_key] = {
+        _eta_smooth[key] = {
             "stop_key": stop_key,
             "eta_min": raw,
             "at": now,
@@ -126,12 +139,57 @@ def smooth_eta_minutes(
     stepped = prev_eta + delta
     alpha = ETA_SMOOTH_ALPHA_UP if stepped >= prev_eta else ETA_SMOOTH_ALPHA_DOWN
     eta = max(0.0, min(ETA_MAX_MINUTES, alpha * stepped + (1.0 - alpha) * prev_eta))
-    _eta_smooth[vehicle_key] = {
+    _eta_smooth[key] = {
         "stop_key": stop_key,
         "eta_min": eta,
         "at": now,
     }
     return round(eta, 2)
+
+
+def stops_ahead(
+    loop: RouteLoop,
+    proj_s_m: float,
+    *,
+    at_stop_m: float = 35.0,
+) -> list[dict[str, Any]]:
+    """All stops forward along one lap, nearest first (skip if already at a stop)."""
+    if not loop.stops:
+        return []
+    ahead_stops: list[dict[str, Any]] = []
+    for stop in loop.stops:
+        sp = loop.project(float(stop["lat"]), float(stop["lon"])).s_m
+        ahead = (sp - proj_s_m) % loop.length_m
+        if ahead < at_stop_m:
+            continue
+        ahead_stops.append(
+            {
+                "key": stop.get("key"),
+                "name": stop.get("name"),
+                "along_m": ahead,
+                "stop_s_m": sp,
+            }
+        )
+    if ahead_stops:
+        ahead_stops.sort(key=lambda s: float(s["along_m"]))
+        return ahead_stops
+
+    # Fallback: full loop to each stop including wrap (at least one entry).
+    for stop in loop.stops:
+        sp = loop.project(float(stop["lat"]), float(stop["lon"])).s_m
+        ahead = (sp - proj_s_m) % loop.length_m
+        if ahead < 1.0:
+            ahead = loop.length_m
+        ahead_stops.append(
+            {
+                "key": stop.get("key"),
+                "name": stop.get("name"),
+                "along_m": ahead,
+                "stop_s_m": sp,
+            }
+        )
+    ahead_stops.sort(key=lambda s: float(s["along_m"]))
+    return ahead_stops
 
 
 def next_stop_ahead(
@@ -141,40 +199,8 @@ def next_stop_ahead(
     at_stop_m: float = 35.0,
 ) -> dict[str, Any] | None:
     """Next stop forward along the loop (skip if already at a stop)."""
-    if not loop.stops:
-        return None
-    best: dict[str, Any] | None = None
-    best_along = float("inf")
-    for stop in loop.stops:
-        sp = loop.project(float(stop["lat"]), float(stop["lon"])).s_m
-        ahead = (sp - proj_s_m) % loop.length_m
-        if ahead < at_stop_m:
-            continue
-        if ahead < best_along:
-            best_along = ahead
-            best = {
-                "key": stop.get("key"),
-                "name": stop.get("name"),
-                "along_m": ahead,
-                "stop_s_m": sp,
-            }
-    if best:
-        return best
-    # Fallback: full loop to nearest forward stop including wrap.
-    for stop in loop.stops:
-        sp = loop.project(float(stop["lat"]), float(stop["lon"])).s_m
-        ahead = (sp - proj_s_m) % loop.length_m
-        if ahead < 1.0:
-            ahead = loop.length_m
-        if ahead < best_along:
-            best_along = ahead
-            best = {
-                "key": stop.get("key"),
-                "name": stop.get("name"),
-                "along_m": ahead,
-                "stop_s_m": sp,
-            }
-    return best
+    ahead = stops_ahead(loop, proj_s_m, at_stop_m=at_stop_m)
+    return ahead[0] if ahead else None
 
 
 def iso_utc(dt: datetime | None = None) -> str:
@@ -396,10 +422,10 @@ def supersede_stale(
     conn: Any,
     *,
     shuttle_key: str,
-    current_target_key: str | None,
     route_key: str | None,
+    allowed_target_keys: set[str] | None = None,
 ) -> int:
-    """Close open predictions that no longer match the active next stop / route."""
+    """Close open predictions that are off-route or no longer ahead this lap."""
     n = 0
     rows = list(
         conn.execute(
@@ -412,16 +438,14 @@ def supersede_stale(
     )
     for row in rows:
         stale = False
-        if route_key and row["route_key"] and row["route_key"] != route_key:
-            stale = True
-        if (
-            current_target_key
-            and row["target_stop_key"]
-            and row["target_stop_key"] != current_target_key
-        ):
-            stale = True
         if not route_key:
             stale = True
+        elif route_key and row["route_key"] and row["route_key"] != route_key:
+            stale = True
+        elif allowed_target_keys is not None:
+            tgt = row["target_stop_key"]
+            if not tgt or tgt not in allowed_target_keys:
+                stale = True
         if stale:
             conn.execute(
                 """
@@ -450,7 +474,7 @@ def maybe_record_prediction(
     speed_raw: str | float | None,
     loops: dict[str, RouteLoop],
 ) -> dict[str, Any] | None:
-    """Resolve arrivals, then open a new prediction for the current next stop."""
+    """Resolve arrivals, then open predictions for every upcoming stop."""
     raw_mph = parse_speed_mph(speed_raw)
     resolved = resolve_arrivals(
         conn,
@@ -465,86 +489,115 @@ def maybe_record_prediction(
 
     if not route_key or route_key not in loops:
         supersede_stale(
-            conn, shuttle_key=shuttle_key, current_target_key=None, route_key=None
+            conn, shuttle_key=shuttle_key, route_key=None, allowed_target_keys=None
         )
-        return {"resolved": resolved, "prediction": None}
+        return {"resolved": resolved, "prediction": None, "predictions": []}
 
     if route_status not in ("on_route", "at_lark"):
         # Off-network / lot / unknown — close every open pred (do not leave
         # Memorial Hall ETAs hanging for a later lap to falsely "arrive").
         supersede_stale(
-            conn, shuttle_key=shuttle_key, current_target_key=None, route_key=None
+            conn, shuttle_key=shuttle_key, route_key=None, allowed_target_keys=None
         )
-        return {"resolved": resolved, "prediction": None}
+        return {"resolved": resolved, "prediction": None, "predictions": []}
 
     loop = loops[route_key]
     proj = loop.project(lat, lon)
-    nxt = next_stop_ahead(loop, proj.s_m)
-    if not nxt or not nxt.get("key"):
-        return {"resolved": resolved, "prediction": None}
+    ahead = stops_ahead(loop, proj.s_m)
+    ahead = [s for s in ahead if s.get("key")]
+    if not ahead:
+        return {"resolved": resolved, "prediction": None, "predictions": []}
 
+    allowed = {str(s["key"]) for s in ahead}
     supersede_stale(
         conn,
         shuttle_key=shuttle_key,
-        current_target_key=str(nxt["key"]),
         route_key=route_key,
+        allowed_target_keys=allowed,
     )
 
-    # Dedup: if last open prediction is same stop and < 20s old, skip.
-    last = conn.execute(
+    now_t = parse_iso(located_at) or datetime.now(timezone.utc)
+    open_by_target: dict[str, Any] = {}
+    for row in conn.execute(
         """
         SELECT id, created_at, target_stop_key, located_at FROM predictions
-        WHERE shuttle_key = ? AND outcome IS NULL
-        ORDER BY id DESC LIMIT 1
+        WHERE shuttle_key = ? AND outcome IS NULL AND target_stop_key IS NOT NULL
+        ORDER BY id DESC
         """,
         (shuttle_key,),
-    ).fetchone()
-    if last and last["target_stop_key"] == nxt["key"]:
-        last_t = parse_iso(last["located_at"]) or parse_iso(last["created_at"])
-        now_t = parse_iso(located_at) or datetime.now(timezone.utc)
-        if last_t and (now_t - last_t).total_seconds() < 20:
-            return {"resolved": resolved, "prediction": {"id": last["id"], "deduped": True}}
+    ):
+        key = str(row["target_stop_key"])
+        if key not in open_by_target:
+            open_by_target[key] = row
 
-    eta_raw, used = eta_minutes(
-        float(nxt["along_m"]),
-        raw_mph,
-        entity_state=entity_state,
-        route_key=route_key,
-        stop_key=str(nxt["key"]),
-    )
-    located_dt = parse_iso(located_at) or datetime.now(timezone.utc)
-    eta_min = smooth_eta_minutes(
-        eta_raw,
-        vehicle_key=shuttle_key,
-        stop_key=str(nxt["key"]),
-        now=located_dt,
-    )
-    pred_id = open_prediction(
-        conn,
-        ping_id=ping_id,
-        shuttle_key=shuttle_key,
-        route_key=route_key,
-        located_at=located_at,
-        lat=lat,
-        lon=lon,
-        s_m=round(proj.s_m, 1),
-        loop_frac=round(proj.loop_frac, 4),
-        entity_state=entity_state,
-        speed_raw_mph=raw_mph,
-        speed_used_mph=used,
-        target_stop_key=str(nxt["key"]),
-        target_stop_name=nxt.get("name"),
-        along_m=float(nxt["along_m"]),
-        eta_min=eta_min,
-    )
+    opened: list[dict[str, Any]] = []
+    for i, stop in enumerate(ahead):
+        stop_key = str(stop["key"])
+        last = open_by_target.get(stop_key)
+        if last:
+            last_t = parse_iso(last["located_at"]) or parse_iso(last["created_at"])
+            if last_t and (now_t - last_t).total_seconds() < PRED_DEDUP_SEC:
+                opened.append(
+                    {
+                        "id": last["id"],
+                        "target": stop_key,
+                        "deduped": True,
+                        "along_m": round(float(stop["along_m"]), 1),
+                    }
+                )
+                continue
+
+        intermediate = [
+            str(s["key"])
+            for s in ahead[:i]
+            if s.get("key") and str(s["key"]) != stop_key
+        ]
+        eta_raw, used = eta_minutes(
+            float(stop["along_m"]),
+            raw_mph,
+            entity_state=entity_state,
+            route_key=route_key,
+            stop_key=stop_key,
+            intermediate_stop_keys=intermediate,
+        )
+        eta_min = smooth_eta_minutes(
+            eta_raw,
+            vehicle_key=shuttle_key,
+            stop_key=stop_key,
+            now=now_t,
+        )
+        pred_id = open_prediction(
+            conn,
+            ping_id=ping_id,
+            shuttle_key=shuttle_key,
+            route_key=route_key,
+            located_at=located_at,
+            lat=lat,
+            lon=lon,
+            s_m=round(proj.s_m, 1),
+            loop_frac=round(proj.loop_frac, 4),
+            entity_state=entity_state,
+            speed_raw_mph=raw_mph,
+            speed_used_mph=used,
+            target_stop_key=stop_key,
+            target_stop_name=stop.get("name"),
+            along_m=float(stop["along_m"]),
+            eta_min=eta_min,
+        )
+        opened.append(
+            {
+                "id": pred_id,
+                "target": stop_key,
+                "along_m": round(float(stop["along_m"]), 1),
+                "eta_min": eta_min,
+                "speed_raw_mph": raw_mph,
+                "speed_used_mph": used,
+            }
+        )
+
+    nxt = opened[0] if opened else None
     return {
         "resolved": resolved,
-        "prediction": {
-            "id": pred_id,
-            "target": nxt["key"],
-            "along_m": round(float(nxt["along_m"]), 1),
-            "eta_min": eta_min,
-            "speed_raw_mph": raw_mph,
-            "speed_used_mph": used,
-        },
+        "prediction": nxt,
+        "predictions": opened,
     }

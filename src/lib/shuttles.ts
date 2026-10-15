@@ -41,6 +41,13 @@ export type LiveShuttle = {
     alongM: number;
     etaMin: number | null;
   } | null;
+  /** Full remaining itinerary this lap (next stop first). */
+  upcomingStops: {
+    key: string;
+    name: string;
+    alongM: number;
+    etaMin: number | null;
+  }[];
   atLark: boolean;
   atStop: boolean;
   rideable: boolean;

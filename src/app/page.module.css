@@ -270,6 +270,40 @@
   color: #a7a9ac;
 }
 
+.upcomingList {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0.45rem 0 0;
+  border-top: 1px solid #444;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.upcomingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.upcomingName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.upcomingEta {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a7a9ac;
+  white-space: nowrap;
+}
+
 .metaGrid {
   display: grid;
   gap: 0.55rem;
@@ -438,6 +472,20 @@
     letter-spacing: 0.1em;
   }
 
+  .upcomingList {
+    margin-top: 0.4rem;
+    padding-top: 0.35rem;
+    gap: 0.18rem;
+  }
+
+  .upcomingName {
+    font-size: 0.72rem;
+  }
+
+  .upcomingEta {
+    font-size: 0.65rem;
+  }
+
   .bullet_md {
     width: 1.85rem;
     height: 1.85rem;
@@ -480,5 +528,14 @@
 
   .toward {
     font-size: 0.62rem;
+  }
+
+  /* Keep itinerary compact: show at most a couple of later stops */
+  .upcomingList {
+    gap: 0.12rem;
+  }
+
+  .upcomingRow:nth-child(n + 3) {
+    display: none;
   }
 }

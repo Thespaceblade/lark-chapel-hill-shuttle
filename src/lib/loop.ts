@@ -222,40 +222,44 @@ export class RouteLoop {
     };
   }
 
-  nextStop(
+  stopsAhead(
     proj: Projection,
-  ): { key: string; name: string; alongM: number } | null {
-    if (!this.stops.length) return null;
+  ): { key: string; name: string; alongM: number }[] {
+    if (!this.stops.length) return [];
     // Only treat as "already here" once we're on top of the pin. A 35 m
     // skip made Express flip to Memorial on the last block into Lark.
     const atStopM = 12;
-    let best: { key: string; name: string; alongM: number } | null = null;
-    let bestAlong = Infinity;
+    const aheadStops: { key: string; name: string; alongM: number }[] = [];
 
     for (const stop of this.stops) {
       const sp = this.stopSM.get(stop.key) ?? this.project(stop.lat, stop.lon).sM;
       let ahead = (sp - proj.sM) % this.lengthM;
       if (ahead < 0) ahead += this.lengthM;
       if (ahead < atStopM) continue;
-      if (ahead < bestAlong) {
-        bestAlong = ahead;
-        best = { key: stop.key, name: stop.name, alongM: ahead };
-      }
+      aheadStops.push({ key: stop.key, name: stop.name, alongM: ahead });
     }
 
-    if (!best) {
-      for (const stop of this.stops) {
-        const sp = this.stopSM.get(stop.key) ?? this.project(stop.lat, stop.lon).sM;
-        let ahead = (sp - proj.sM) % this.lengthM;
-        if (ahead < 0) ahead += this.lengthM;
-        if (ahead < 1) ahead = this.lengthM;
-        if (ahead < bestAlong) {
-          bestAlong = ahead;
-          best = { key: stop.key, name: stop.name, alongM: ahead };
-        }
-      }
+    if (aheadStops.length) {
+      aheadStops.sort((a, b) => a.alongM - b.alongM);
+      return aheadStops;
     }
-    return best;
+
+    for (const stop of this.stops) {
+      const sp = this.stopSM.get(stop.key) ?? this.project(stop.lat, stop.lon).sM;
+      let ahead = (sp - proj.sM) % this.lengthM;
+      if (ahead < 0) ahead += this.lengthM;
+      if (ahead < 1) ahead = this.lengthM;
+      aheadStops.push({ key: stop.key, name: stop.name, alongM: ahead });
+    }
+    aheadStops.sort((a, b) => a.alongM - b.alongM);
+    return aheadStops;
+  }
+
+  nextStop(
+    proj: Projection,
+  ): { key: string; name: string; alongM: number } | null {
+    const ahead = this.stopsAhead(proj);
+    return ahead[0] ?? null;
   }
 }
 
@@ -263,11 +267,18 @@ export function etaMinutes(
   alongM: number,
   speedMph: number | null,
   state: string | null = null,
-  opts?: { routeKey?: string; stopKey?: string },
+  opts?: {
+    routeKey?: string;
+    stopKey?: string;
+    intermediateStopKeys?: string[];
+  },
 ): number {
   const mph = effectiveSpeedMph(speedMph, state);
   const mps = mph * 0.44704;
   let minutes = mps > 0 ? alongM / mps / 60 : ETA_MAX_MINUTES;
+  for (const mid of opts?.intermediateStopKeys ?? []) {
+    minutes += stopPadMinutes(opts?.routeKey, mid);
+  }
   minutes += stopPadMinutes(opts?.routeKey, opts?.stopKey);
   // Long remaining arcs under-predict in the arrived set (lights / shared corridor).
   if (alongM > 1000) minutes += 1.2;
@@ -282,8 +293,8 @@ export function etaMinutes(
 export const ETA_TYPICAL_MPH = 12;
 export const ETA_MIN_MPH = 8;
 export const ETA_MAX_MPH = 18;
-/** Hard ceiling so next-stop never flashes 20–30 min from a crawl snap. */
-export const ETA_MAX_MINUTES = 12;
+/** Hard ceiling for full-lap itinerary ETAs (Regular can exceed 12 min). */
+export const ETA_MAX_MINUTES = 45;
 
 /**
  * Additive dwell from arrived prediction bias (partial; avoids overfit).

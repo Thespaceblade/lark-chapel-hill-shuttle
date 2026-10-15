@@ -280,9 +280,9 @@ export function etaMinutes(
     minutes += stopPadMinutes(opts?.routeKey, mid);
   }
   minutes += stopPadMinutes(opts?.routeKey, opts?.stopKey);
-  // Long remaining arcs under-predict in the arrived set (lights / shared corridor).
-  if (alongM > 1000) minutes += 1.2;
-  else if (alongM > 600) minutes += 0.4;
+  minutes += distAddMinutes(alongM);
+  minutes +=
+    corridorSlopeMinPerKm(opts?.routeKey, opts?.stopKey) * (alongM / 1000);
   return Math.max(0, Math.min(ETA_MAX_MINUTES, minutes));
 }
 
@@ -297,14 +297,35 @@ export const ETA_MAX_MPH = 18;
 export const ETA_MAX_MINUTES = 45;
 
 /**
- * Additive dwell from arrived prediction bias (partial; avoids overfit).
+ * Fit from 558 arrived outcomes (Sep 2026 train set).
  * Keys: `${routeKey}/${stopKey}`.
  */
 export const ETA_STOP_PAD_MIN: Record<string, number> = {
-  "regular/memorial": 2.5,
-  "express/memorial": 1.0,
-  "regular/sitterson": 0.3,
+  "regular/memorial": 1.0,
+  "express/memorial": 0.5,
+  "regular/sitterson": 0.45,
+  "regular/hsl": 0.15,
 };
+
+/** Extra minutes per km remaining (corridor delay beyond cruise). */
+export const ETA_CORRIDOR_SLOPE_MIN_PER_KM: Record<string, number> = {
+  "regular/memorial": 2.2,
+  "express/memorial": 1.5,
+  "regular/sitterson": 0.3,
+  "regular/bschool_deck": 0.2,
+};
+
+/** Global remaining-distance additives: [maxAlongM, addMin]. */
+export const ETA_DIST_ADD_BANDS: [number, number][] = [
+  [150, -0.2],
+  [400, 0.0],
+  [800, 0.25],
+  [1500, 0.7],
+  [Number.POSITIVE_INFINITY, 1.4],
+];
+
+/** Fire notify slightly early so riders aren't late to the curb. */
+export const NOTIFY_ETA_BUFFER_MIN = 0.5;
 
 export function stopPadMinutes(
   routeKey: string | null | undefined,
@@ -312,6 +333,26 @@ export function stopPadMinutes(
 ): number {
   if (!routeKey || !stopKey) return 0;
   return ETA_STOP_PAD_MIN[`${routeKey}/${stopKey}`] ?? 0;
+}
+
+export function corridorSlopeMinPerKm(
+  routeKey: string | null | undefined,
+  stopKey: string | null | undefined,
+): number {
+  if (!routeKey || !stopKey) return 0;
+  return ETA_CORRIDOR_SLOPE_MIN_PER_KM[`${routeKey}/${stopKey}`] ?? 0;
+}
+
+export function distAddMinutes(alongM: number): number {
+  for (const [maxM, add] of ETA_DIST_ADD_BANDS) {
+    if (alongM <= maxM) return add;
+  }
+  return 0;
+}
+
+/** Slightly early ETA for push/SMS so riders aren't late to the stop. */
+export function notificationEtaMinutes(etaMin: number): number {
+  return Math.max(0, Math.round((etaMin + NOTIFY_ETA_BUFFER_MIN) * 100) / 100);
 }
 
 /** Soft caps on how fast a displayed ETA may move between polls. */

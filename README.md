@@ -26,6 +26,18 @@ cp .env.example .env.local
 
 The site polls `/api/live` every 1s, draws intended loops, and shows next-stop ETA.
 
+### Home Screen + arrival alerts (Web Push)
+
+The tracker is installable as a home-screen web app. On **iPhone (iOS 16.4+)**, open the site in Safari → Share → **Add to Home Screen**, launch from the icon, then use **Notify** on the board (pick line + stop; alerts at **5 min** and **2 min**).
+
+Server setup (Vercel env):
+
+1. `npx web-push generate-vapid-keys` → set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`mailto:…`)
+2. Create a free [Upstash Redis](https://upstash.com/) DB → `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+3. Set `CRON_SECRET` to a long random string (Vercel Cron calls `/api/notify/tick` every minute with `Authorization: Bearer …`). **Minute crons require Vercel Pro**; on Hobby change `vercel.json` to a daily/hourly schedule or call the tick URL from an external cron.
+
+Without those env vars the board still works; Notify stays off with a short setup hint.
+
 ## Python CLI
 
 ```bash

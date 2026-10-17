@@ -57,9 +57,12 @@ fi
 COUNT="$(python3 -c "import json; print(json.load(open('data/history.json'))['ping_count'])")"
 TRAIN="$(python3 -c "import json; print(json.load(open('data/train_pings.json'))['ping_count'])")"
 ARRIVED="$(python3 -c "import json; print(json.load(open('data/train_predictions.json'))['ping_count'])")"
-git -c user.email="cursor-agent@users.noreply.github.com" \
-    -c user.name="Cursor Agent" \
-    commit -m "Update shuttle history snapshot (${COUNT} pings, ${TRAIN} train_ok, ${ARRIVED} arrived ETAs, ${STAMP})"
+git -c user.name="Jason Charwin" \
+    -c user.email="Jason.charwin360@gmail.com" \
+    -c committer.name="Jason Charwin" \
+    -c committer.email="Jason.charwin360@gmail.com" \
+    commit --author="Jason Charwin <Jason.charwin360@gmail.com>" \
+    -m "Update shuttle history snapshot (${COUNT} pings, ${TRAIN} train_ok, ${ARRIVED} arrived ETAs, ${STAMP})"
 
 for attempt in 1 2 3 4; do
   # force-with-lease: branch tip is intentionally rebuilt from main + latest snapshot

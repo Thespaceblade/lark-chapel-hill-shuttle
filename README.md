@@ -34,7 +34,7 @@ Server setup (Vercel env):
 
 1. `npx web-push generate-vapid-keys` → set `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (`mailto:…`)
 2. Create a free [Upstash Redis](https://upstash.com/) DB → `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
-3. Set `CRON_SECRET` to a long random string (Vercel Cron calls `/api/notify/tick` every minute with `Authorization: Bearer …`). **Minute crons require Vercel Pro**; on Hobby change `vercel.json` to a daily/hourly schedule or call the tick URL from an external cron.
+3. Set `CRON_SECRET` to a long random string. Hit `/api/notify/tick` about once a minute with `Authorization: Bearer $CRON_SECRET` (or `?secret=`). Hobby cannot use Vercel’s `* * * * *` cron (it fails the deploy), so use an [external cron](https://cron-job.org/) or upgrade to **Pro** and add a minute schedule in `vercel.json`.
 
 Without those env vars the board still works; Notify stays off with a short setup hint.
 

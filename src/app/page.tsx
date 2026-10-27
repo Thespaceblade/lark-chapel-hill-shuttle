@@ -215,7 +215,8 @@ export default function HomePage() {
     let cancelled = false;
     async function pull() {
       try {
-        const res = await fetch("/api/live", { cache: "no-store" });
+        // Allow CDN/browser to honor /api/live short Cache-Control (s-maxage).
+        const res = await fetch("/api/live");
         const data = (await res.json()) as LiveResponse;
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         if (!cancelled) {
